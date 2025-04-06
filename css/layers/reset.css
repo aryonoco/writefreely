@@ -1,0 +1,102 @@
+@layer reset {
+    /* =============== Nuclear Typography Reset ============= */
+    * {
+        text-rendering: optimizeLegibility !important;
+        text-size-adjust: 100% !important;
+    }
+
+    /* Universal reset to override everything */
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        background: none !important;
+        border-color: currentColor !important;
+        border-radius: 0 !important;
+        border-style: solid !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        color: inherit !important;
+        display: revert !important;
+        filter: none !important;
+        flex: none !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        height: auto !important;
+        letter-spacing: normal !important;
+        line-height: normal !important;
+        margin: 0 !important;
+        max-height: none !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        opacity: 1 !important;
+        outline: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        position: static !important;
+        text-align: start !important;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        text-transform: none !important;
+        transform: none !important;
+        transition: none !important;
+        vertical-align: baseline !important;
+        visibility: visible !important;
+        white-space: normal !important;
+        width: auto !important;
+        word-spacing: normal !important;
+        z-index: auto !important;
+    }
+
+    /* Explicit WriteFreely element resets */
+    body,
+    #post,
+    #collection,
+    .e-content,
+    #blog-title,
+    header,
+    nav,
+    footer,
+    .content,
+    #wrapper,
+    .posts,
+    .post,
+    .meta,
+    input,
+    textarea,
+    button {
+        all: initial !important;
+        box-sizing: border-box !important;
+        font-family: system-ui, sans-serif !important;
+    }
+
+    /* Highlight.js override */
+    .hljs,
+    [class^="hljs-"],
+    [class*=" hljs-"] {
+        background: transparent !important;
+        color: inherit !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+    }
+
+    /* Continuous reset animation */
+    @keyframes continuously-reset {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    body * {
+        animation: continuously-reset 1s infinite;
+        animation-delay: calc(var(--continuously-reset-delay, 0) * 1ms);
+    }
+}

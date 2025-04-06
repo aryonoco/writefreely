@@ -1,0 +1,1336 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap");
+:root {
+    --copyright-text: "Copyright © 2025 Aryan Ameri CC BY 4.0";
+    /* =========================================================== */
+    /*         Colours                                             */
+    /* Base palette - light theme (Rose Pine Dawn)                 */
+    /* Original Colours from: https://github.com/rose-pine/palette */
+    /* =========================================================== */
+
+    --rp-base: oklch(0.97 0.0126 71.33) !important;
+    --rp-surface: oklch(0.99 0.0091 76.61) !important;
+    --rp-overlay: oklch(0.94 0.0174 73.07) !important;
+    --rp-text: oklch(0.46 0.0625 289.83) !important;
+    --rp-love: oklch(0.6 0.1061 2.62) !important;
+    --rp-rose: oklch(0.7 0.1054 23.36) !important;
+    --rp-pine: oklch(0.5 0.0775 227.7) !important;
+    --rp-foam: oklch(0.63 0.0664 210.06) !important;
+    --rp-iris: oklch(0.62 0.0723 305.67) !important;
+    --rp-muted: oklch(0.67 0.0267 298.62) !important;
+    --rp-subtle: oklch(0.58 0.0448 291.04) !important;
+    --rp-gold: oklch(0.76 0.1457 70) !important;
+    --rp-highlight-low: oklch(0.95 0.0105 58.21) !important;
+    --rp-highlight-med: oklch(0.89 0.0061 31.06) !important;
+    --rp-highlight-high: oklch(0.84 0.0061 334) !important;
+
+    /* Syntax Highlighting Colours */
+    --syntax-base: color-mix(in oklch, var(--rp-base), white 70%) !important;
+    --syntax-surface: var(--rp-surface) !important;
+    --syntax-overlay: color-mix(
+        in oklch,
+        var(--rp-overlay),
+        white 5%
+    ) !important;
+    --syntax-text: color-mix(in oklch, var(--rp-text), black 20%) !important;
+    --syntax-love: color-mix(in oklch, var(--rp-love), black 20%) !important;
+    --syntax-rose: color-mix(in oklch, var(--rp-rose), black 20%) !important;
+    --syntax-pine: color-mix(in oklch, var(--rp-pine), black 20%) !important;
+    --syntax-foam: color-mix(in oklch, var(--rp-foam), black 20%) !important;
+    --syntax-iris: color-mix(in oklch, var(--rp-iris), black 20%) !important;
+    --syntax-muted: color-mix(in oklch, var(--rp-muted), black 25%) !important;
+    --syntax-subtle: color-mix(
+        in oklch,
+        var(--rp-subtle),
+        black 25%
+    ) !important;
+    --syntax-gold: color-mix(in oklch, var(--rp-gold), black 35%) !important;
+
+    /* ===================== */
+    /*       Fonts           */
+    /* ===================== */
+
+    /* Font families */
+    --font-sans: "Inclusive Sans", system-ui, sans-serif !important;
+    --font-serif: "Source Serif 4", ui-serif, serif !important;
+    --font-mono: "Fira Code", ui-monospace, monospace !important;
+
+    /* reset */
+    font-size: 100% !important;
+    font-display: swap !important;
+
+    /* Typography scaling */
+    --optical-size: clamp(
+        0.96875rem,
+        0.8cqw + 0.96875rem,
+        1.21875rem
+    ) !important;
+    --serif-opsz: clamp(0.5rem, 0.8cqw + 0.5rem, 3.75rem) !important;
+    --font-weight-base: 400 !important;
+    --font-weight-heading: 600 !important;
+
+    /* Fira Code features */
+    --code-features: "ss01", "ss05", "zero" !important; /* Arrow ligatures, hex shapes, slashed zero */
+
+    /* Utility Custom Properties (variables) */
+    --ease-quintic: cubic-bezier(0.86, 0, 0.07, 1) !important;
+
+    --focus-outline: 0.15rem solid var(--rp-love) !important;
+    --focus-outline-offset: 0.25rem !important;
+    --focus-outline-position: under !important;
+    --focus-background-mix: color-mix(
+        in oklch,
+        var(--rp-surface),
+        transparent 90%
+    ) !important;
+}
+
+body {
+    /* =============== Overrides ============= */
+    /* ===== Force Remove Atom One Theme ===== */
+    link[href*="atom-one-light.min.css"] {
+        display: none !important;
+    }
+
+    .hljs * {
+        all: revert !important;
+    }
+
+    /* Aggressive header visibility fix */
+    header,
+    #blog-title,
+    nav,
+    #blog-title a,
+    nav a,
+    .h-card.p-author,
+    .pinned {
+        opacity: 1 !important;
+        filter: none !important;
+        mask-image: none !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        background-image: none !important;
+        background-color: transparent !important;
+        mix-blend-mode: normal !important;
+        backdrop-filter: none !important;
+        clip-path: none !important;
+        border: none !important;
+    }
+
+    /* Resetting blog title */
+    #blog-title a,
+    nav a {
+        color: var(--rp-text) !important;
+        text-shadow: 0 0 0 var(--rp-text) !important;
+    }
+
+    /* Reset Description Note */
+    header p.description {
+        color: unset !important;
+        font-size: 1.5rem !important;
+        margin-top: 1.5rem !important;
+        line-height: 1.5 !important;
+    }
+
+    /* ===== Reset & Override Highlightjs ===== */
+    .hljs {
+        all: revert !important;
+        display: inline-block !important;
+        overflow-x: auto !important;
+        padding: 0.5em !important;
+        background: var(--syntax-overlay) !important;
+        color: var(--syntax-text) !important;
+        white-space: pre !important;
+        tab-size: 2 !important;
+    }
+
+    pre code.hljs {
+        background: transparent !important;
+        padding: 0 !important;
+        font-size: 0.9em !important;
+        line-height: 1.5 !important;
+        display: block !important;
+        white-space: pre !important;
+        text-indent: 0 !important;
+        position: relative !important;
+        tab-size: 2 !important;
+    }
+
+    code.hljs:not(pre code.hljs) {
+        padding: 3px 5px !important;
+    }
+
+    /* ===================== */
+    /*      Typography       */
+    /* ===================== */
+    font-size-adjust: none !important;
+    background: var(--rp-base) !important;
+    color: var(--rp-text) !important;
+    transition: background 0.3s ease !important;
+    font-family: var(--font-sans) !important;
+    font-weight: var(--font-weight-base) !important;
+    font-size: var(--optical-size) !important;
+    font-optical-sizing: auto !important;
+    font-synthesis: none !important;
+    font-variant-numeric: ordinal !important;
+    text-wrap: pretty !important;
+    hyphens: auto !important;
+    hyphenate-limit-chars: 8 4 3 !important;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin: 1.5em 0 0.5em !important;
+        font-family: var(--font-serif) !important;
+        font-weight: var(--font-weight-heading) !important;
+        font-variation-settings: "opsz" var(--serif-opsz) !important;
+        font-variant-numeric: proportional-nums lining-nums !important;
+        text-wrap: balance !important;
+    }
+
+    h1,
+    h2,
+    h3 {
+        color: var(--rp-iris) !important;
+    }
+
+    h4,
+    h5,
+    h6 {
+        color: var(--rp-love) !important;
+        font-variant-caps: small-caps !important;
+    }
+
+    /* ===================== */
+    /*      Links            */
+    /* ===================== */
+
+    a {
+        color: var(--rp-pine) !important;
+        text-decoration-line: underline !important;
+        text-decoration-color: var(--rp-pine) !important;
+        text-decoration-thickness: 0.05rem !important;
+        text-underline-offset: 0.2rem !important;
+        text-decoration-skip-ink: none !important;
+        transition:
+            color 420ms var(--ease-quintic),
+            text-decoration-color 420ms var(--ease-quintic),
+            text-decoration-thickness 180ms var(--ease-quintic),
+            text-underline-offset 180ms var(--ease-quintic) !important;
+
+        /* Shared interactive states */
+        &:is(:hover, :focus-visible) {
+            color: var(--rp-love) !important;
+            text-decoration-color: currentColor !important;
+            text-decoration-thickness: 0.125rem !important;
+            text-underline-offset: 0.15rem !important;
+        }
+
+        /* Focus-specific enhancements */
+        &:focus-visible {
+            outline: var(--focus-outline);
+            outline-offset: var(--focus-outline-offset);
+            outline-position: var(--focus-outline-position);
+            background-color: var(--focus-background-mix);
+        }
+    }
+    body#post header h1,
+    body#subpage header h1 {
+        font-size: 2em;
+    }
+
+    a.h-card.p-author {
+        color: var(--rp-iris) !important;
+        text-decoration-color: var(--rp-highlight-med) !important;
+    }
+
+    #blog-title a {
+        font-family: var(--font-serif) !important;
+        font-weight: var(--font-weight-heading) !important;
+        letter-spacing: 0.3rem !important;
+        text-transform: capitalize !important;
+        text-wrap: balance !important;
+        text-shadow: 0 0 0.1rem var(--rp-subtle) !important;
+        text-decoration-color: var(--rp-highlight-high) !important;
+        text-decoration-thickness: 0.125rem !important;
+        text-decoration-style: dotted !important;
+        text-underline-offset: 0.3rem !important;
+        font-stretch: 105% !important;
+        font-optical-sizing: auto !important;
+        font-synthesis: none !important;
+        color: var(--rp-iris) !important;
+
+        &:hover {
+            color: var(--rp-love) !important;
+            text-decoration-color: var(--rp-love) !important;
+            text-decoration-thickness: 0.15rem !important;
+            text-underline-offset: 0.3rem !important;
+        }
+
+        &:focus-visible {
+            outline: var(--focus-outline);
+            outline-offset: var(--focus-outline-offset);
+            outline-position: var(--focus-outline-position);
+            background-color: var(--focus-background-mix);
+        }
+    }
+
+    /* ===== Navigation Links ===== */
+    nav a {
+        color: var(--rp-pine) !important;
+        font-family: var(--font-serif) !important;
+        font-weight: var(--font-weight-heading) !important;
+        letter-spacing: 0.02em !important;
+        text-decoration-line: wavy !important;
+        text-decoration-color: var(--syntax-overlay) !important;
+        text-decoration-thickness: 0.12rem !important;
+        letter-spacing: 0.03em !important;
+        text-underline-offset: 0.4rem !important;
+        text-decoration-skip-ink: none !important;
+
+        /* Pinned state enhancements */
+        &.pinned {
+            color: var(--syntax-love) !important;
+            text-decoration-line: underline !important;
+            text-decoration-thickness: 0.05rem !important;
+            font-weight: var(--font-weight-heading) !important;
+            font-optical-sizing: auto !important;
+            font-variation-settings: "opsz" var(--optical-size) !important;
+            text-decoration-color: var(--syntax-love) !important;
+        }
+        /* Interactive states */
+        &:is(:hover, :focus-visible) {
+            color: var(--rp-foam) !important;
+            text-decoration-color: currentColor !important;
+            text-decoration-thickness: 0.15rem !important;
+        }
+        /* Focus state using global vars */
+        &:focus-visible {
+            outline: var(--focus-outline);
+            outline-offset: var(--focus-outline-offset);
+            outline-position: var(--focus-outline-position);
+            background-color: var(--focus-background-mix);
+        }
+    }
+
+    /* Header Links */
+    header p.description a {
+        text-decoration-style: wavy !important;
+    }
+
+    /* Manage Menu */
+    nav#manage ul * {
+        border: none !important;
+        font-family: var(--font-sans) !important;
+        background: var(--rp-base) !important;
+        text-decoration: none !important;
+        font-weight: 300 !important;
+        font-size: 0.7rem !important;
+    }
+    nav#manage ul a {
+        display: block !important;
+        padding: 0.5em !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .dropdown-nav ul li hr,
+    nav#manage ul li hr {
+        display: none !important;
+    }
+
+    /* ===== Article Text ===== */
+    .font.norm,
+    body#collection article.norm,
+    body#post article.norm,
+    body#subpage article.norm,
+    input#title.norm,
+    pre.norm,
+    span.norm,
+    textarea.norm {
+        font-family: var(--font-sans) !important;
+    }
+
+    /* Collection view post titles */
+    article#collection .post-title a {
+        color: var(--rp-iris) !important;
+    }
+
+    body#post {
+        color: var(--rp-text) !important;
+    }
+
+    blockquote {
+        border-left: 3px solid var(--rp-iris) !important;
+        background: var(--rp-surface) !important;
+        padding: 0.5em 1em !important;
+        margin: 1.5em 0 !important;
+    }
+
+    /* ===== Text Selection ===== */
+    ::selection {
+        background-color: color-mix(
+            in oklch,
+            var(--rp-highlight-med),
+            transparent 30%
+        ) !important;
+        color: var(--rp-text) !important;
+        text-shadow: none !important;
+    }
+
+    /* ===== Signature ===== */
+    .signature {
+        color: var(--rp-subtle) !important;
+        font-size: 0.75rem !important;
+        border-top: 1px solid var(--rp-overlay) !important;
+        font-family: var(--font-serif) !important;
+        text-align: center !important;
+        padding-top: 1rem !important;
+    }
+
+    .signature a {
+        color: var(--rp-pine) !important;
+        font-weight: 500 !important;
+    }
+
+    /* ===== Form Elements ===== */
+    input[type="submit"] {
+        --border: color-mix(
+            in oklch,
+            var(--rp-pine),
+            transparent 30%
+        ) !important;
+        border: 2px solid var(--border) !important;
+        background: var(--rp-surface) !important;
+        color: var(--rp-pine) !important;
+        padding: 0.75em 1.5em !important;
+        transition: all 0.3s ease !important;
+        font-weight: 700 !important;
+        transition:
+            border-color 200ms ease,
+            background 200ms ease,
+            color 200ms ease !important;
+    }
+
+    input[type="submit"]:hover {
+        --border: var(--rp-pine);
+        background: var(--rp-pine) !important;
+        color: var(--rp-surface) !important;
+    }
+
+    time.dt-published {
+        color: var(--syntax-muted) !important;
+        filter: contrast(1.5) brightness(1.05) !important;
+    }
+
+    /* ===== Footer ===== */
+    body#post footer nav a,
+    body#collection footer nav a {
+        text-decoration: none !important;
+    }
+
+    #footer,
+    body footer nav {
+        color: var(--syntax-subtle) !important;
+        text-transform: uppercase !important;
+        text-decoration: none !important;
+        font-size: 0.8rem !important;
+    }
+
+    footer hr {
+        background: var(--rp-highlight-low) !important;
+    }
+
+    #footer a {
+        color: var(--rp-foam) !important;
+    }
+
+    #footer a:hover {
+        text-decoration: underline !important;
+        color: var(--rp-iris) !important;
+    }
+
+    /* Insert Copyright text at the end */
+    body footer nav::after {
+        content: var(--copyright-text);
+        color: var(--syntax-subtle);
+        display: block;
+        text-align: center;
+        margin-top: 0.75rem;
+        font-size: 0.8rem;
+        white-space: pre-line;
+        text-transform: uppercase !important;
+    }
+
+    /* ===== Code Blocks ===== */
+    pre,
+    body#collection pre,
+    body#post pre,
+    body#subpage pre * {
+        /* Color theming */
+        background-color: var(--syntax-base) !important;
+        color: var(--syntax-text) !important;
+
+        /* Modern border handling */
+        border: 1px solid var(--rp-iris) !important;
+        border-block-start: 8px solid var(--rp-iris) !important;
+        border-inline-start: 4px solid var(--rp-iris) !important;
+        border-radius: 8px !important;
+
+        /* Enhanced shadow with OKLCH */
+        box-shadow: 0 2px 8px oklch(from var(--syntax-muted) l c h / 10%) !important;
+
+        /* Spacing improvements */
+        padding: 1.25rem 1.5rem !important;
+        margin-block: 2rem !important;
+        margin-inline: auto !important;
+
+        /* Modern width control */
+        max-width: clamp(
+            25rem,
+            85cqw + 0.5rem,
+            62.5rem
+        ) !important; /* 400px-1000px */
+
+        /* Typography enhancements */
+        font-family: var(--font-mono) !important;
+        font-size: clamp(0.875rem, 0.875rem + 0.25cqi, 1rem) !important;
+        font-family: var(--font-mono) !important;
+        font-variant-numeric: tabular-nums slashed-zero !important;
+        font-feature-settings: var(--code-features) !important;
+
+        /* Layout & overflow */
+        white-space: pre !important;
+        overflow: clip !important;
+        position: relative !important;
+        tab-size: 2 !important;
+    }
+
+    code:not(pre code) {
+        font-family: var(--font-mono) !important;
+        color: var(--syntax-love) !important;
+        background: var(--syntax-base) !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 4px !important;
+        font-size: 0.9em !important;
+        border: none !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        box-shadow: inset 0 0 0 1px var(--rp-highlight-high) !important;
+    }
+
+    /* ===== Rose Pine Syntax Highlighting ===== */
+    /* Original highlighting from https://github.com/rose-pine/hljs */
+
+    .hljs-subst,
+    .hljs-params,
+    .hljs-attribute,
+    .hljs-template-variable,
+    .hljs-variable {
+        color: var(--syntax-text) !important;
+    }
+
+    .hljs-selector-tag,
+    .hljs-keyword,
+    .hljs-literal,
+    .hljs-symbol,
+    .hljs-string,
+    .hljs-bullet,
+    .hljs-meta .hljs-string,
+    .hljs-name,
+    .hljs-tag,
+    .language-apache .hljs-section,
+    .language-scss .hljs-keyword,
+    .language-stylus .hljs-keyword {
+        color: var(--syntax-foam);
+        text-shadow: 0 0 1px color-mix(in oklch, var(--syntax-foam), black 15%) !important;
+    }
+
+    .hljs-selector-id,
+    .hljs-selector-attr,
+    .hljs-selector-class,
+    .hljs-built_in,
+    .hljs-class,
+    .hljs-type,
+    .hljs-title,
+    .hljs-code,
+    .hljs-formula,
+    .hljs-doctag,
+    .hljs-attr,
+    .language-bnf .hljs-attribute,
+    .language-cpp .hljs-meta .hljs-string,
+    .language-diff .hljs-meta,
+    .language-ebnf .hljs-attribute,
+    .language-ldif .hljs-attribute {
+        color: var(--syntax-iris) !important;
+    }
+
+    .hljs-property,
+    .hljs-selector-pseudo,
+    .hljs-function,
+    .hljs-function > .hljs-title,
+    .hljs-title.hljs-function,
+    .hljs-section,
+    .language-abnf .hljs-attribute,
+    .language-apache .hljs-attribute,
+    .language-arduino .hljs-built_in,
+    .language-aspectj > .hljs-title,
+    .language-clojure .hljs-name,
+    .language-coq .hljs-built_in,
+    .language-css .hljs-built_in,
+    .language-css .hljs-keyword,
+    .language-glsl .hljs-built_in,
+    .language-lisp .hljs-name,
+    .language-lua .hljs-built_in,
+    .language-moonscript .hljs-built_in,
+    .language-nginx .hljs-attribute,
+    .language-pf .hljs-built_in,
+    .language-processing .hljs-built_in,
+    .language-vim .hljs-built_in {
+        color: var(--syntax-rose) !important;
+    }
+
+    .hljs-number,
+    .hljs-regexp,
+    .language-abnf .hljs-symbol,
+    .language-clojure .hljs-symbol {
+        color: var(--syntax-gold) !important;
+    }
+
+    .hljs-comment,
+    .hljs-quote {
+        color: var(--syntax-muted) !important;
+        font-style: italic !important;
+    }
+
+    .hljs-meta,
+    .hljs-meta .hljs-keyword,
+    .hljs-template-tag,
+    .language-nginx .hljs-section {
+        color: var(--syntax-pine) !important;
+    }
+
+    .language-aspectj .hljs-meta,
+    .language-css .hljs-keyword,
+    .language-groovy .hljs-meta:not(:first-child),
+    .language-haxe .hljs-meta,
+    .language-java .hljs-meta,
+    .language-swift .hljs-meta,
+    .language-yaml .hljs-meta {
+        color: var(--syntax-love) !important;
+    }
+
+    .hljs-strong {
+        font-weight: 700 !important;
+    }
+
+    .hljs-emphasis {
+        font-style: italic !important;
+    }
+
+    .hljs-link:hover {
+        text-decoration: underline !important;
+    }
+
+    .hljs-selector-id {
+        font-weight: 700 !important;
+    }
+
+    .language-vim .hljs-built_in {
+        font-style: italic !important;
+    }
+
+    .hljs-regexp,
+    .hljs-number {
+        text-shadow: 0 0 0.5px
+            color-mix(in oklch, var(--syntax-gold), black 15%) !important;
+    }
+
+    .hljs-addition {
+        background-color: color-mix(
+            in oklch,
+            var(--syntax-pine) 50%,
+            transparent
+        ) !important;
+        color: var(--syntax-pine) !important;
+    }
+
+    .hljs-deletion {
+        background-color: color-mix(
+            in oklch,
+            var(--syntax-love) 50%,
+            transparent
+        ) !important;
+        color: var(--syntax-love) !important;
+    }
+}
+
+/* ===== Dark Mode ===== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --rp-base: oklch(0.22 0.0262 290.92) !important;
+        --rp-surface: oklch(0.24 0.033264 289.0242) !important;
+        --rp-overlay: oklch(0.27 0.0423 289.34) !important;
+        --rp-text: oklch(0.9 0.0312 289.59) !important;
+        --rp-love: oklch(0.7 0.1565 4.14) !important;
+        --rp-rose: oklch(0.84 0.0532 20.58) !important;
+        --rp-pine: oklch(0.53 0.0798 227.26) !important;
+        --rp-foam: oklch(0.82 0.0537 209.55) !important;
+        --rp-iris: oklch(0.78 0.0944 304) !important;
+        --rp-gold: oklch(0.85 0.109 74.73) !important;
+        --rp-muted: oklch(0.54 0.0448 291.69) !important;
+        --rp-subtle: oklch(0.66 0.0441 291.25) !important;
+        --rp-highlight-low: oklch(0.25 0.0259 287.4) !important;
+        --rp-highlight-med: oklch(0.37 0.0366 291.38) !important;
+        --rp-highlight-high: oklch(0.44 0.039 290.83) !important;
+
+        /* Syntax Highlighting Colours */
+        --syntax-base: color-mix(
+            in oklch,
+            var(--rp-base),
+            black 15%
+        ) !important;
+        --syntax-surface: color-mix(
+            in oklch,
+            var(--rp-surface),
+            black 10%
+        ) !important;
+        --syntax-overlay: color-mix(
+            in oklch,
+            var(--rp-overlay),
+            white 5%
+        ) !important;
+        --syntax-text: color-mix(
+            in oklch,
+            var(--rp-text),
+            white 15%
+        ) !important;
+        --syntax-love: color-mix(
+            in oklch,
+            var(--rp-love),
+            white 15%
+        ) !important;
+        --syntax-rose: color-mix(
+            in oklch,
+            var(--rp-rose),
+            white 10%
+        ) !important;
+        --syntax-pine: color-mix(
+            in oklch,
+            var(--rp-pine),
+            white 20%
+        ) !important;
+        --syntax-foam: color-mix(
+            in oklch,
+            var(--rp-foam),
+            white 10%
+        ) !important;
+        --syntax-iris: color-mix(
+            in oklch,
+            var(--rp-iris),
+            white 12%
+        ) !important;
+        --syntax-muted: color-mix(
+            in oklch,
+            var(--rp-muted),
+            white 10%
+        ) !important;
+        --syntax-subtle: color-mix(
+            in oklch,
+            var(--rp-subtle),
+            white 10%
+        ) !important;
+        --syntax-gold: color-mix(
+            in oklch,
+            var(--rp-gold),
+            white 10%
+        ) !important;
+    }
+
+    a {
+        color: var(--rp-foam) !important;
+        text-decoration-color: var(--rp-foam) !important;
+    }
+
+    a:hover {
+        color: var(--rp-iris) !important;
+    }
+
+    pre,
+    body#collection pre,
+    body#post pre,
+    body#subpage pre * {
+        background-color: var(--syntax-base) !important;
+    }
+
+    nav a.pinned {
+        color: var(--rp-love) !important;
+    }
+
+    .hljs-comment,
+    .hljs-quote {
+        color: var(--syntax-subtle) !important;
+    }
+
+    input[type="submit"] {
+        border: 2px solid var(--rp-foam) !important;
+        color: var(--rp-foam) !important;
+    }
+
+    input[type="submit"]:hover {
+        background: var(--rp-foam) !important;
+        color: var(--rp-base) !important;
+    }
+
+    nav a {
+        color: var(--rp-foam) !important;
+    }
+
+    nav a:hover {
+        color: var(--rp-iris) !important;
+    }
+
+    time.dt-published {
+        color: var(--rp-love) !important;
+    }
+
+    .signature a {
+        color: var(--rp-foam) !important;
+    }
+}
+
+/* ===== High Contrast Mode ===== */
+@media (prefers-contrast: more) {
+    :root {
+        /* Light colors - make lighter */
+        --rp-base: color-mix(
+            in oklch,
+            oklch(0.97 0.0126 71.33),
+            white 15%
+        ) !important;
+        --rp-surface: color-mix(
+            in oklch,
+            oklch(0.99 0.0091 76.61),
+            white 5%
+        ) !important;
+        --rp-overlay: color-mix(
+            in oklch,
+            oklch(0.94 0.0174 73.07),
+            black 10%
+        ) !important;
+
+        /* Make darker */
+        --rp-text: color-mix(
+            in oklch,
+            oklch(0.46 0.0625 289.83),
+            black 20%
+        ) !important;
+        --rp-love: color-mix(
+            in oklch,
+            oklch(0.6 0.1061 2.62),
+            black 30%
+        ) !important;
+        --rp-rose: color-mix(
+            in oklch,
+            oklch(0.7 0.1054 23.36),
+            black 25%
+        ) !important;
+        --rp-pine: color-mix(
+            in oklch,
+            oklch(0.5 0.0775 227.7),
+            black 20%
+        ) !important;
+        --rp-foam: color-mix(
+            in oklch,
+            oklch(0.63 0.0664 210.06),
+            black 25%
+        ) !important;
+        --rp-iris: color-mix(
+            in oklch,
+            oklch(0.62 0.0723 305.67),
+            black 25%
+        ) !important;
+        --rp-muted: color-mix(
+            in oklch,
+            oklch(0.67 0.0267 298.62),
+            black 25%
+        ) !important;
+        --rp-subtle: color-mix(
+            in oklch,
+            oklch(0.58 0.0448 291.04),
+            black 25%
+        ) !important;
+        --rp-gold: color-mix(
+            in oklch,
+            oklch(0.76 0.1457 70),
+            black 30%
+        ) !important;
+        /* Make highlights slightly darker to stand out */
+        --rp-highlight-low: color-mix(
+            in oklch,
+            oklch(0.95 0.0105 58.21),
+            black 10%
+        ) !important;
+        --rp-highlight-med: color-mix(
+            in oklch,
+            oklch(0.89 0.0061 31.06),
+            black 10%
+        ) !important;
+        --rp-highlight-high: color-mix(
+            in oklch,
+            oklch(0.84 0.0061 334),
+            black 10%
+        ) !important;
+        --syntax-base: color-mix(
+            in oklch,
+            var(--rp-base),
+            white 70%
+        ) !important;
+        --syntax-surface: var(--rp-surface) !important;
+        --syntax-overlay: color-mix(
+            in oklch,
+            var(--rp-overlay),
+            white 5%
+        ) !important;
+        --syntax-text: color-mix(
+            in oklch,
+            var(--rp-text),
+            black 20%
+        ) !important;
+        --syntax-love: color-mix(
+            in oklch,
+            var(--rp-love),
+            black 20%
+        ) !important;
+        --syntax-rose: color-mix(
+            in oklch,
+            var(--rp-rose),
+            black 20%
+        ) !important;
+        --syntax-pine: color-mix(
+            in oklch,
+            var(--rp-pine),
+            black 20%
+        ) !important;
+        --syntax-foam: color-mix(
+            in oklch,
+            var(--rp-foam),
+            black 20%
+        ) !important;
+        --syntax-iris: color-mix(
+            in oklch,
+            var(--rp-iris),
+            black 20%
+        ) !important;
+        --syntax-muted: color-mix(
+            in oklch,
+            var(--rp-muted),
+            black 25%
+        ) !important;
+        --syntax-subtle: color-mix(
+            in oklch,
+            var(--rp-subtle),
+            black 25%
+        ) !important;
+        --syntax-gold: color-mix(
+            in oklch,
+            var(--rp-gold),
+            black 35%
+        ) !important;
+    }
+    body {
+        font-size-adjust: 0.6 !important;
+        letter-spacing: 0.05em !important;
+        line-height: 1.8 !important;
+    }
+
+    a {
+        text-decoration: underline !important;
+        text-decoration-thickness: 1px !important;
+    }
+
+    nav a,
+    .signature,
+    #blog-title a,
+    .signature a {
+        font-weight: 700 !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --rp-base: color-mix(
+                in oklch,
+                oklch(0.22 0.0262 290.92),
+                black 15%
+            ) !important;
+            --rp-surface: color-mix(
+                in oklch,
+                oklch(0.24 0.033264 289.0242),
+                black 5%
+            ) !important;
+            --rp-overlay: color-mix(
+                in oklch,
+                oklch(0.27 0.0423 289.34),
+                white 10%
+            ) !important;
+
+            --rp-text: color-mix(
+                in oklch,
+                oklch(0.9 0.0312 289.59),
+                white 20%
+            ) !important;
+            --rp-love: color-mix(
+                in oklch,
+                oklch(0.7 0.1565 4.14),
+                white 30%
+            ) !important;
+            --rp-rose: color-mix(
+                in oklch,
+                oklch(0.84 0.0532 20.58),
+                white 25%
+            ) !important;
+            --rp-pine: color-mix(
+                in oklch,
+                oklch(0.53 0.0798 227.26),
+                white 20%
+            ) !important;
+            --rp-foam: color-mix(
+                in oklch,
+                oklch(0.82 0.0537 209.55),
+                white 25%
+            ) !important;
+            --rp-iris: color-mix(
+                in oklch,
+                oklch(0.78 0.0944 304),
+                white 25%
+            ) !important;
+            --rp-muted: color-mix(
+                in oklch,
+                oklch(0.54 0.0448 291.69),
+                white 25%
+            ) !important;
+            --rp-subtle: color-mix(
+                in oklch,
+                oklch(0.66 0.0441 291.25),
+                white 25%
+            ) !important;
+            --rp-gold: color-mix(
+                in oklch,
+                oklch(0.85 0.109 74.73),
+                white 30%
+            ) !important;
+
+            --rp-highlight-low: color-mix(
+                in oklch,
+                oklch(0.25 0.0259 287.4),
+                white 10%
+            ) !important;
+            --rp-highlight-med: color-mix(
+                in oklch,
+                oklch(0.37 0.0366 291.38),
+                white 10%
+            ) !important;
+            --rp-highlight-high: color-mix(
+                in oklch,
+                oklch(0.44 0.039 290.83),
+                white 10%
+            ) !important;
+            --syntax-base: color-mix(
+                in oklch,
+                var(--rp-base),
+                black 15%
+            ) !important;
+            --syntax-surface: color-mix(
+                in oklch,
+                var(--rp-surface),
+                black 10%
+            ) !important;
+            --syntax-overlay: color-mix(
+                in oklch,
+                var(--rp-overlay),
+                white 5%
+            ) !important;
+            --syntax-text: color-mix(
+                in oklch,
+                var(--rp-text),
+                white 15%
+            ) !important;
+            --syntax-love: color-mix(
+                in oklch,
+                var(--rp-love),
+                white 15%
+            ) !important;
+            --syntax-rose: color-mix(
+                in oklch,
+                var(--rp-rose),
+                white 10%
+            ) !important;
+            --syntax-pine: color-mix(
+                in oklch,
+                var(--rp-pine),
+                white 20%
+            ) !important;
+            --syntax-foam: color-mix(
+                in oklch,
+                var(--rp-foam),
+                white 10%
+            ) !important;
+            --syntax-iris: color-mix(
+                in oklch,
+                var(--rp-iris),
+                white 12%
+            ) !important;
+            --syntax-muted: color-mix(
+                in oklch,
+                var(--rp-muted),
+                white 10%
+            ) !important;
+            --syntax-subtle: color-mix(
+                in oklch,
+                var(--rp-subtle),
+                white 10%
+            ) !important;
+            --syntax-gold: color-mix(
+                in oklch,
+                var(--rp-gold),
+                white 10%
+            ) !important;
+        }
+    }
+}
+
+/* ===== Forced Colors Mode ===== */
+@media (forced-colors: active) {
+    :root {
+        --rp-base: Canvas !important;
+        --rp-surface: Field !important;
+        --rp-overlay: ButtonFace !important;
+        --rp-text: CanvasText !important;
+        --rp-muted: GrayText !important;
+        --rp-subtle: CanvasText !important;
+        --rp-love: Mark !important;
+        --rp-gold: VisitedText !important;
+        --rp-pine: LinkText !important;
+        --rp-foam: ButtonText !important;
+        --rp-rose: AccentColor !important;
+        --rp-iris: VisitedText !important;
+        --syntax-base: Canvas !important;
+        --syntax-surface: Field !important;
+        --syntax-overlay: ButtonFace !important;
+        --syntax-text: LinkText !important;
+        --syntax-love: VisitedText !important;
+        --syntax-rose: AccentColor !important;
+        --syntax-pine: LinkText !important;
+        --syntax-foam: LinkText !important;
+        --syntax-iris: VisitedText !important;
+        --syntax-muted: GrayText !important;
+        --syntax-subtle: GrayText !important;
+        --syntax-gold: VisitedText !important;
+
+        /* Highlight colors */
+        --rp-highlight-low: Field !important;
+        --rp-highlight-med: Highlight !important;
+        --rp-highlight-high: ButtonBorder !important;
+    }
+
+    .hljs :is(.keyword, .built_in, .function, .class) {
+        color: LinkText !important;
+    }
+    :focus-visible {
+        outline: 2px solid Highlight !important;
+        outline-offset: 2px !important;
+    }
+
+    a {
+        color: LinkText !important;
+        text-decoration: underline !important;
+        text-underline-offset: 0.2em !important;
+    }
+
+    pre,
+    code {
+        forced-color-adjust: none !important;
+        background-image: none !important;
+    }
+
+    :where(pre, code):not([class]) {
+        border: 1px solid CanvasText !important;
+        padding: 0.2em 0.4em !important;
+        forced-color-adjust: none !important;
+    }
+
+    .hljs {
+        &-keyword,
+        &-selector-tag,
+        &-built_in,
+        &-name,
+        &-tag {
+            font-weight: bolder !important;
+        }
+
+        &-comment,
+        &-quote,
+        &-meta {
+            font-style: italic !important;
+        }
+    }
+
+    :is(button, input, select, textarea) {
+        border: 1px solid ButtonText !important;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        border: 1px solid ButtonText !important;
+    }
+
+    :where(img, svg, [class*="icon"], [class*="Icon"]) {
+        forced-color-adjust: none !important;
+    }
+
+    :where(table, th, td) {
+        border: 1px solid CanvasText !important;
+        border-collapse: collapse !important;
+    }
+
+    blockquote {
+        border-inline-start: 3px solid CanvasText !important;
+        padding-inline-start: 1em;
+    }
+
+    hr {
+        border-block-start: 1px solid CanvasText !important;
+        opacity: 1;
+    }
+
+    ::selection {
+        background: Highlight !important;
+        color: HighlightText !important;
+    }
+
+    :where(button, input, select, textarea) {
+        border: 1px solid ButtonText !important;
+        padding: 0.25em 0.5em !important;
+
+        &:focus {
+            outline: 2px solid Highlight !important;
+            outline-offset: 2px !important;
+        }
+    }
+    input[type="checkbox"],
+    input[type="radio"] {
+        accent-color: CanvasText !important;
+        width: 1em !important;
+        height: 1em !important;
+    }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+    :where(*, ::before, ::after) {
+        /* Animation control */
+        animation-delay: -1ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        animation-timeline: none !important;
+
+        /* Transition control */
+        transition-duration: 0s !important;
+        transition-behavior: allow-discrete !important;
+
+        /* Text stability enhancements */
+        text-wrap: auto !important;
+        hyphens: manual !important;
+        hyphenate-limit-chars: auto !important;
+        line-height: 1.6 !important;
+        letter-spacing: 0.02em !important;
+
+        /* Scroll control */
+        scroll-behavior: auto !important;
+        scroll-timeline: none !important;
+
+        /* Motion path neutering */
+        view-timeline: none !important;
+        offset-path: none !important;
+        motion-path: none !important;
+    }
+
+    /* ===== Text Container Stability ===== */
+    :where(p, li, blockquote, .prose) {
+        text-wrap: balance !important;
+        word-break: break-word !important;
+
+        &::after {
+            content: "";
+            display: inline-block;
+            width: 0.25em;
+        }
+    }
+
+    /* ===== View Transitions Override ===== */
+    ::view-transition-group(*),
+    ::view-transition-image-pair(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+        mix-blend-mode: normal !important;
+    }
+
+    /* ===== Interactive Elements ===== */
+    :is(
+        a,
+        button,
+        [role="button"],
+        input,
+        select,
+        textarea,
+        [role="slider"],
+        [role="switch"],
+        summary,
+        details,
+        dialog
+    ) {
+        transition-property: opacity, visibility, border-color !important;
+        transition-timing-function: step-end !important;
+    }
+
+    :focus-visible {
+        outline-offset: 0.3em !important;
+        transition: outline-offset 0.01s step-end !important;
+    }
+
+    /* ===== Scroll-Driven Animations ===== */
+    @scroll-timeline * {
+        timeline-axis: none !important;
+        timeline-scope: none !important;
+    }
+
+    /* ===== Performance Optimisation ===== */
+    @media (update: slow) {
+        :where(*, ::before, ::after) {
+            animation-range: normal !important;
+            animation-timeline: none !important;
+            text-wrap: auto !important;
+        }
+    }
+
+    /* ===== Container Query Safety ===== */
+    @container style(--motion: reduced) {
+        * {
+            animation: none !important;
+            transition: none !important;
+            text-wrap: balance !important;
+        }
+    }
+
+    /* ===== Motion Path Protection ===== */
+    [style*="offset-path"],
+    [style*="motion-path"] {
+        offset-path: none !important;
+        motion-path: none !important;
+    }
+}

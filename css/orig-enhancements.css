@@ -1,0 +1,1498 @@
+:root {
+    /* =============== Nuclear Typography Reset ============= */
+    * {
+        text-rendering: optimizeLegibility !important;
+        text-size-adjust: 100% !important;
+    }
+    /* Universal reset to override everything */
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        background: none !important;
+        border-color: currentColor !important;
+        border-radius: 0 !important;
+        border-style: solid !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        color: inherit !important;
+        display: revert !important;
+        filter: none !important;
+        flex: none !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        height: auto !important;
+        letter-spacing: normal !important;
+        line-height: normal !important;
+        margin: 0 !important;
+        max-height: none !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        opacity: 1 !important;
+        outline: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        position: static !important;
+        text-align: start !important;
+        text-decoration: none !important;
+        text-shadow: none !important;
+        text-transform: none !important;
+        transform: none !important;
+        transition: none !important;
+        vertical-align: baseline !important;
+        visibility: visible !important;
+        white-space: normal !important;
+        width: auto !important;
+        word-spacing: normal !important;
+        z-index: auto !important;
+
+        /* Explicitly target WriteFreely's main elements */
+        body,
+        #post,
+        #collection,
+        .e-content,
+        #blog-title,
+        header,
+        nav,
+        footer,
+        .content,
+        #wrapper,
+        .posts,
+        .post,
+        .meta,
+        input,
+        textarea,
+        button {
+            all: initial !important;
+            box-sizing: border-box !important;
+            font-family: system-ui, sans-serif !important;
+        }
+
+        /* Override highlight.js styles completely */
+        .hljs,
+        [class^="hljs-"],
+        [class*=" hljs-"] {
+            background: transparent !important;
+            color: inherit !important;
+            font-style: normal !important;
+            font-weight: normal !important;
+        }
+
+        @keyframes continuously-reset {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Apply to all elements to continuously reset */
+        body * {
+            animation: continuously-reset 1s infinite;
+            animation-delay: calc(var(--continuously-reset-delay, 0) * 1ms);
+        }
+    }
+
+    /* =============== CSS Custom Properties ============= */
+    /* Rose Pine Color Palette */
+    --rp-base-l: 0.95 !important;
+    --rp-base-c: 0.0126 !important;
+    --rp-base-h: 71.33 !important;
+    --rp-base: oklch(
+        var(--rp-base-l) var(--rp-base-c) var(--rp-base-h)
+    ) !important;
+
+    /* Surface */
+    --rp-surface-l: 0.99 !important;
+    --rp-surface-c: 0.0091 !important;
+    --rp-surface-h: 76.61 !important;
+    --rp-surface: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+
+    /* Overlay */
+    --rp-overlay-l: 0.94 !important;
+    --rp-overlay-c: 0.0174 !important;
+    --rp-overlay-h: 73.07 !important;
+    --rp-overlay: oklch(
+        var(--rp-overlay-l) var(--rp-overlay-c) var(--rp-overlay-h)
+    ) !important;
+
+    /* Text */
+    --rp-text-l: 0.46 !important;
+    --rp-text-c: 0.0625 !important;
+    --rp-text-h: 289.83 !important;
+    --rp-text: oklch(
+        var(--rp-text-l) var(--rp-text-c) var(--rp-text-h)
+    ) !important;
+
+    /* Love */
+    --rp-love-l: 0.6 !important;
+    --rp-love-c: 0.1061 !important;
+    --rp-love-h: 2.62 !important;
+    --rp-love: oklch(
+        var(--rp-love-l) var(--rp-love-c) var(--rp-love-h)
+    ) !important;
+
+    /* Rose */
+    --rp-rose-l: 0.7 !important;
+    --rp-rose-c: 0.1054 !important;
+    --rp-rose-h: 23.36 !important;
+    --rp-rose: oklch(
+        var(--rp-rose-l) var(--rp-rose-c) var(--rp-rose-h)
+    ) !important;
+
+    /* Pine */
+    --rp-pine-l: 0.5 !important;
+    --rp-pine-c: 0.0775 !important;
+    --rp-pine-h: 227.7 !important;
+    --rp-pine: oklch(
+        var(--rp-pine-l) var(--rp-pine-c) var(--rp-pine-h)
+    ) !important;
+
+    /* Foam */
+    --rp-foam-l: 0.63 !important;
+    --rp-foam-c: 0.0664 !important;
+    --rp-foam-h: 210.06 !important;
+    --rp-foam: oklch(
+        var(--rp-foam-l) var(--rp-foam-c) var(--rp-foam-h)
+    ) !important;
+
+    /* Iris */
+    --rp-iris-l: 0.62 !important;
+    --rp-iris-c: 0.0723 !important;
+    --rp-iris-h: 305.67 !important;
+    --rp-iris: oklch(
+        var(--rp-iris-l) var(--rp-iris-c) var(--rp-iris-h)
+    ) !important;
+
+    /* Muted */
+    --rp-muted-l: 0.67 !important;
+    --rp-muted-c: 0.0267 !important;
+    --rp-muted-h: 298.62 !important;
+    --rp-muted: oklch(
+        var(--rp-muted-l) var(--rp-muted-c) var(--rp-muted-h)
+    ) !important;
+
+    /* Subtle */
+    --rp-subtle-l: 0.58 !important;
+    --rp-subtle-c: 0.0448 !important;
+    --rp-subtle-h: 291.04 !important;
+    --rp-subtle: oklch(
+        var(--rp-subtle-l) var(--rp-subtle-c) var(--rp-subtle-h)
+    ) !important;
+
+    /* Gold */
+    --rp-gold-l: 0.76 !important;
+    --rp-gold-c: 0.1457 !important;
+    --rp-gold-h: 70 !important;
+    --rp-gold: oklch(
+        var(--rp-gold-l) var(--rp-gold-c) var(--rp-gold-h)
+    ) !important;
+
+    /* Highlight Low */
+    --rp-highlight-low-l: 0.95 !important;
+    --rp-highlight-low-c: 0.0105 !important;
+    --rp-highlight-low-h: 58.21 !important;
+    --rp-highlight-low: oklch(
+        var(--rp-highlight-low-l) var(--rp-highlight-low-c)
+            var(--rp-highlight-low-h)
+    ) !important;
+
+    /* Highlight Medium */
+    --rp-highlight-med-l: 0.89 !important;
+    --rp-highlight-med-c: 0.0061 !important;
+    --rp-highlight-med-h: 31.06 !important;
+    --rp-highlight-med: oklch(
+        var(--rp-highlight-med-l) var(--rp-highlight-med-c)
+            var(--rp-highlight-med-h)
+    ) !important;
+
+    /* Highlight High */
+    --rp-highlight-high-l: 0.84 !important;
+    --rp-highlight-high-c: 0.0061 !important;
+    --rp-highlight-high-h: 334 !important;
+    --rp-highlight-high: oklch(
+        var(--rp-highlight-high-l) var(--rp-highlight-high-c)
+            var(--rp-highlight-high-h)
+    ) !important;
+
+    /* Font families */
+    --font-sans: "Inclusive Sans", system-ui, ui-sans-serif, sans-serif !important;
+    --font-serif: "Source Serif 4", ui-serif, serif !important;
+    --font-mono: "Fira Code", ui-monospace, monospace !important;
+
+    /* Base sizing with viewport-relative scaling */
+    --optical-size: clamp(
+        1rem,
+        0.5rem + 0.3dvw,
+        min(1.25rem, 160px) /* WCAG 3.0 §3.4.7 */
+    ) !important;
+
+    /* True logarithmic type scale */
+    --heading-scale: log(1.333) !important;
+    --h6: calc(var(--optical-size) * var(--heading-scale)) !important;
+    --h5: calc(var(--h6) * var(--heading-scale)) !important;
+    --h4: calc(var(--h5) * var(--heading-scale)) !important;
+    --h3: calc(var(--h4) * var(--heading-scale)) !important;
+    --h2: calc(var(--h3) * var(--heading-scale)) !important;
+    --h1: calc(var(--h2) * var(--heading-scale)) !important;
+
+    /* APCA Parameters */
+    --apca-exponent: 2.4 !important;
+    --apca-multiplier: 1.14 !important;
+    --apca-offset: 0.27 !important;
+    --font-size-normalized: calc(var(--optical-size) / 1rem) !important;
+
+    /* WCAG 3.0 Draft APCA Threshold Values */
+    --wcag3-body-large: 60 !important; /* Body text >= 24px */
+    --wcag3-body-normal: 75 !important; /* Body text 18-24px */
+    --wcag3-body-small: 90 !important; /* Body text < 18px */
+
+    --wcag3-heading-large: 55 !important; /* Headings >= 24px */
+    --wcag3-heading-normal: 65 !important; /* Headings 18-24px */
+    --wcag3-heading-small: 75 !important; /* Headings < 18px */
+
+    --wcag3-ui-large: 40 !important; /* UI text >= 24px */
+    --wcag3-ui-normal: 60 !important; /* UI text 18-24px */
+    --wcag3-ui-small: 75 !important; /* UI text < 18px */
+    --wcag3-non-text-normal: 30 !important; /* Standard for non-text elements */
+
+    --wcag3-disabled-text: 45 !important;
+    --wcag3-placeholder: 50 !important;
+
+    /* Disabled state contrast */
+    :disabled {
+        --current-semantic-target: var(--wcag3-disabled-text) !important;
+        opacity: 1 !important; /* Remove default opacity override */
+    }
+
+    /* Placeholder text */
+    ::placeholder {
+        --current-semantic-target: var(--wcag3-placeholder) !important;
+    }
+
+    /* Form validation */
+    :invalid {
+        --text-c: var(--rp-love-c) !important;
+        --text-h: var(--rp-love-h) !important;
+        --current-semantic-target: 90 !important;
+    }
+
+    /* Non-text contrast delta calculation */
+    --non-text-min-delta: calc(
+        pow(
+                var(--wcag3-non-text-normal) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+    /* APCA-compliant minimum lightness calculations for each content type */
+    --body-text-min-delta: calc(
+        pow(
+                var(--wcag3-body-normal) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --code-text-min-delta: calc(
+        pow(
+                var(--wcag3-body-small) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --heading-text-min-delta: calc(
+        pow(
+                var(--wcag3-heading-normal) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --blockquote-text-min-delta: calc(
+        pow(
+                (var(--wcag3-body-normal) * 0.9) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --ui-text-min-delta: calc(
+        pow(
+                var(--wcag3-ui-normal) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --focus-indicator-min-delta: calc(
+        pow(
+                45 / var(--apca-multiplier),
+                /* 45 is recommended for focus indicators */ 1 /
+                    var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --code-block-bg-min-delta: calc(
+        pow(
+                (var(--wcag3-body-small) * 0.6) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    /* Minimum lightness values (with hard floor of 0.5) */
+    --body-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--body-text-min-delta): var(--parent-bg-l) +
+                var(--body-text-min-delta)
+        ),
+        0.7
+    ) !important;
+
+    --code-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--code-text-min-delta): var(--parent-bg-l) +
+                var(--code-text-min-delta)
+        ),
+        0.75
+    ) !important;
+
+    --heading-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--heading-text-min-delta): var(--parent-bg-l) +
+                var(--heading-text-min-delta)
+        ),
+        0.72
+    ) !important;
+
+    --blockquote-text-min-l: clamp(
+        0.45,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--blockquote-text-min-delta): var(--parent-bg-l) +
+                var(--blockquote-text-min-delta)
+        ),
+        0.68
+    ) !important;
+
+    --ui-text-min-l: clamp(
+        0.48,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--ui-text-min-delta): var(--parent-bg-l) +
+                var(--ui-text-min-delta)
+        ),
+        0.7
+    ) !important;
+
+    --shadow-contrast-l: clamp(
+        0.05,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--non-text-min-delta): 0.05
+        ),
+        0.2
+    ) !important;
+
+    --focus-indicator-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--focus-indicator-min-delta): var(--parent-bg-l) +
+                var(--focus-indicator-min-delta)
+        ),
+        0.9
+    ) !important;
+
+    --code-block-bg-l: clamp(
+        0.1,
+        calc(
+            var(--parent-bg-l) > 0.5 ?
+                max(0.1, var(--parent-bg-l) - var(--code-block-bg-min-delta)):
+                min(0.3, var(--parent-bg-l) + var(--code-block-bg-min-delta))
+        ),
+        0.3
+    ) !important;
+
+    /* Font size breakpoints (in rem) */
+    --text-size-large: 1.5 !important; /* 24px at 16px base */
+    --text-size-normal: 1.125 !important; /* 18px at 16px base */
+
+    /* Calculate threshold based on element font size */
+    --get-size-based-threshold: calc(
+        (
+                1 -
+                    min(
+                        1,
+                        max(
+                            0,
+                            (
+                                    var(--element-font-size, 1rem) -
+                                        var(--text-size-normal)
+                                ) /
+                                (
+                                    var(--text-size-large) -
+                                        var(--text-size-normal)
+                                )
+                        )
+                    )
+            ) *
+            (var(--element-threshold-small) - var(--element-threshold-normal)) +
+            var(--element-threshold-normal)
+    ) !important;
+
+    /* Font weight adjustment factor (reduces contrast need for bold text) */
+    --weight-adjustment-factor: calc(
+        max(0, min(0.15, (var(--current-font-weight, 400) - 400) / 2000))
+    ) !important;
+
+    /* Apply weight adjustment to calculated contrast target */
+    --final-contrast-target: calc(
+        var(--current-semantic-target) * (1 - var(--weight-adjustment-factor))
+    ) !important;
+
+    /* Semantic contrast ratios */
+    --text-main-contrast: 85 !important;
+    --text-secondary-contrast: 60 !important;
+    --text-alpha: 0.9 !important;
+
+    /* Default color components */
+    --text-c: var(--rp-text-c) !important;
+    --text-h: var(--rp-text-h) !important;
+    --code-c: var(--rp-foam-c) !important;
+    --code-h: var(--rp-foam-h) !important;
+    --heading-c: var(--rp-iris-c) !important;
+    --heading-h: var(--rp-iris-h) !important;
+    --blockquote-c: var(--rp-muted-c) !important;
+    --blockquote-h: var(--rp-muted-h) !important;
+
+    /* Legacy APCA Dynamic Engine Modifications - Kept for compatibility */
+    --apca-body-target: clamp(
+        var(--text-secondary-contrast),
+        var(--text-main-contrast) - 25 + 15dvw,
+        var(--text-main-contrast)
+    ) !important;
+
+    --apca-code-target: clamp(
+        var(--text-secondary-contrast),
+        var(--text-main-contrast) - 15 + 10dvw,
+        var(--text-main-contrast) + 15
+    ) !important;
+
+    --apca-heading-target: clamp(
+        var(--text-secondary-contrast),
+        var(--text-main-contrast) - 15dvw,
+        var(--text-main-contrast)
+    ) !important;
+
+    --apca-blockquote-target: calc(
+        var(--text-secondary-contrast) * 0.9
+    ) !important;
+
+    /* Base Color Lightness */
+    --base-lightness: var(--rp-base-l) !important;
+    --parent-bg-l: var(--base-lightness) !important;
+
+    /* APCA Dynamic Color Engine with WCAG 3.0 Integration */
+    --compute-apca-color: calc(
+        pow(
+                abs(
+                    var(--parent-bg-l) -
+                        pow(
+                            (
+                                    var(
+                                            --final-contrast-target,
+                                            var(--current-semantic-target)
+                                        ) +
+                                        var(--apca-offset)
+                                ) /
+                                var(--apca-multiplier),
+                            1 / var(--apca-exponent)
+                        )
+                ),
+                1 / var(--apca-exponent)
+            ) *
+            sign(var(--parent-bg-l) - 0.5)
+    ) !important;
+
+    /* Semantic-APCA bridge */
+    --text-main-l: var(--compute-apca-color) !important;
+    --code-l: calc(
+        var(--compute-apca-color) * var(--apca-code-target) /
+            var(--apca-body-target)
+    ) !important;
+    --heading-l: calc(
+        var(--compute-apca-color) * var(--apca-heading-target) /
+            var(--apca-body-target)
+    ) !important;
+    --blockquote-l: calc(
+        var(--compute-apca-color) * var(--apca-blockquote-target) /
+            var(--apca-body-target)
+    ) !important;
+
+    /* Base semantic colors with WCAG 3.0 APCA-derived minimum lightness */
+    --text-contrast: oklch(
+        clamp(
+                var(--body-text-min-l),
+                var(--text-main-l),
+                calc(var(--body-text-min-l) + 0.2)
+            )
+            var(--text-c, var(--rp-text-c)) var(--text-h, var(--rp-text-h)) /
+            var(--text-alpha)
+    ) !important;
+
+    --code-contrast: oklch(
+        clamp(
+                var(--code-text-min-l),
+                var(--code-l),
+                calc(var(--code-text-min-l) + 0.2)
+            )
+            var(--code-c, var(--rp-foam-c)) var(--code-h, var(--rp-foam-h)) / 1
+    ) !important;
+
+    --heading-contrast: oklch(
+        clamp(
+                var(--heading-text-min-l),
+                var(--heading-l),
+                calc(var(--heading-text-min-l) + 0.2)
+            )
+            var(--heading-c, var(--rp-iris-c))
+            var(--heading-h, var(--rp-iris-h)) / 1
+    ) !important;
+
+    --blockquote-contrast: oklch(
+        clamp(
+                var(--blockquote-text-min-l),
+                var(--blockquote-l),
+                calc(var(--blockquote-text-min-l) + 0.2)
+            )
+            var(--blockquote-c, var(--rp-muted-c))
+            var(--blockquote-h, var(--rp-muted-h)) / 0.8
+    ) !important;
+
+    /* Default context settings */
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    --current-font-family: var(--font-sans) !important;
+    --current-font-weight: var(--font-weight-sans-adaptive) !important;
+    --current-line-height: var(--line-height-normal) !important;
+    --current-letter-spacing: var(--letter-spacing-base) !important;
+
+    /* Dynamic Font Weight Scaling - Sans */
+    --font-weight-sans-adaptive: clamp(
+        300,
+        round(
+            nearest,
+            calc(var(--font-weight-base) * var(--font-size-normalized) * 0.9),
+            100
+        ),
+        700
+    ) !important;
+
+    /* Dynamic Font Weight Scaling - Serif */
+    --font-weight-serif-adaptive: clamp(
+        500,
+        round(
+            nearest,
+            calc(
+                var(--font-weight-heading) * var(--font-size-normalized) * 1.1
+            ),
+            100
+        ),
+        800
+    ) !important;
+
+    /* Dynamic Font Weight Scaling - Mono */
+    --font-weight-mono-adaptive: clamp(
+        300,
+        round(
+            nearest,
+            calc(var(--font-weight-base) * var(--font-size-normalized)),
+            100
+        ),
+        700
+    ) !important;
+
+    /* Font Weight Base Values */
+    --font-weight-base: 400 !important;
+    --font-weight-heading: 600 !important;
+
+    /* =============== Font Feature Controls =============== */
+    /* Inclusive Sans (v2.0) - Supports: kern, liga, calt */
+    --font-features-sans: "kern" on, /* Kerning */ "liga" on,
+        /* Standard ligatures */ "calt" on /* Contextual alternates */ !important;
+
+    /* Source Serif 4 (v3.000) - Supports: kern, liga, dlig, onum, tnum, salt */
+    --font-features-serif: "kern" on, /* Kerning */ "liga" on,
+        /* Standard ligatures */ "dlig" on,
+        /* Decorative ligatures */ "onum" on,
+        /* Oldstyle numerals */ "salt" on /* Stylistic alternates */ !important;
+
+    /* Fira Code (v6.2) - Supports: ss01-ss03, zero, calt */
+    --font-features-mono: "ss01" on, /* Curly inequality operators */ "ss03" on,
+        /* Fira Code v4+ compatibility */ "zero" on /* Slashed zero */ !important;
+
+    --text-justification: unsafe !important;
+
+    /* Typography controls */
+    --line-height-normal: 1.6 !important;
+    --line-height-heading: 1.2 !important;
+    --line-height-code: 1.8 !important;
+    --letter-spacing-base: -0.01em !important;
+    --letter-spacing-heading: -0.03em !important;
+    --letter-spacing-min: 0.01em !important;
+    --letter-spacing-max: 0.06em !important;
+    --letter-spacing-ratio: 0.0025 !important; /* 0.25% of font size */
+
+    /* Spacing and layout */
+    --block-margin: 1.5em !important;
+    --paragraph-margin: 0.8em !important;
+
+    /* =============== HYBRID WCAG 3.0 JUSTIFICATION SYSTEM =============== */
+    /* Fluid Base System (Solution 6 Enhanced) */
+    --text-justification: unsafe !important;
+    --justification-threshold: 50ch !important;
+    --current-semantic-target: var(--wcag3-body-normal) !important;
+
+    /* Adaptive Spacing with Breakpoint Awareness */
+    --rag-adjustment: clamp(
+        calc(var(--optical-size) * 0.15),
+        calc(var(--optical-size) * 0.25),
+        0.4rem
+    ) !important;
+
+    /* Dynamic Indentation with Overflow Protection */
+    --text-indent-base: clamp(
+        0.25rem,
+        calc(var(--optical-size) * 0.5),
+        1rem
+    ) !important;
+
+    /* Enhanced Transition Engine (Solution 6 + 5) */
+    --text-transition-base: 0.3s !important;
+    --text-transition-factor: calc(
+        var(--font-size-normalized, 1) * 0.1 + var(--optical-size) * 0.05
+    ) !important;
+    --text-transition-duration: clamp(
+        0.2s,
+        calc(var(--text-transition-base) * var(--text-transition-factor)),
+        0.5s
+    ) !important;
+}
+
+/* =============== Background Propagation System =============== */
+/* Update background propagation system */
+*[style*="background"],
+*[style*="background-color"] {
+    --parent-bg-l: var(--element-bg-l, var(--parent-bg-l)) !important;
+
+    /* Recalculate minimum lightness values when background changes */
+    --body-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--body-text-min-delta): var(--parent-bg-l) +
+                var(--body-text-min-delta)
+        ),
+        0.7
+    ) !important;
+
+    --code-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--code-text-min-delta): var(--parent-bg-l) +
+                var(--code-text-min-delta)
+        ),
+        0.75
+    ) !important;
+
+    --heading-text-min-l: clamp(
+        0.5,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--heading-text-min-delta): var(--parent-bg-l) +
+                var(--heading-text-min-delta)
+        ),
+        0.72
+    ) !important;
+
+    --blockquote-text-min-l: clamp(
+        0.45,
+        calc(
+            var(--parent-bg-l) > 0.5 ? var(--parent-bg-l) -
+                var(--blockquote-text-min-delta): var(--parent-bg-l) +
+                var(--blockquote-text-min-delta)
+        ),
+        0.68
+    ) !important;
+}
+
+* {
+    letter-spacing: clamp(
+        var(--letter-spacing-min),
+        calc(var(--optical-size) * var(--letter-spacing-ratio)),
+        var(--letter-spacing-max)
+    ) !important;
+}
+
+/* =============== Base Typography ============= */
+body {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    font-optical-sizing: auto !important;
+    font-synthesis: none !important;
+    text-wrap: pretty !important;
+    line-height: var(--line-height-normal) !important;
+    letter-spacing: var(--letter-spacing-base) !important;
+    background-color: var(--rp-base) !important;
+    --element-bg-l: var(--rp-base-l) !important;
+    --parent-bg-l: var(--rp-base-l) !important;
+    --element-font-size: var(--optical-size) !important;
+    --element-threshold-small: var(--wcag3-body-small) !important;
+    --element-threshold-normal: var(--wcag3-body-normal) !important;
+    --element-threshold-large: var(--wcag3-body-large) !important;
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    color: var(--text-contrast) !important;
+    font-feature-settings: var(--font-features-sans);
+    font-variant-numeric: lining-nums proportional-nums;
+}
+
+html {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    font-optical-sizing: auto !important;
+    font-synthesis: none !important;
+    text-wrap: pretty !important;
+    line-height: var(--line-height-normal) !important;
+    letter-spacing: var(--letter-spacing-base) !important;
+    background-color: var(--rp-base) !important;
+    --element-bg-l: var(--rp-base-l) !important;
+    --parent-bg-l: var(--rp-base-l) !important;
+}
+
+/* =============== WCAG 3.0 Element Type Threshold Assignment =============== */
+/* Body text elements */
+:where(p, li, div:not([class]), span:not([class]), td, th) {
+    --element-font-size: var(--optical-size) !important;
+    --element-threshold-small: var(--wcag3-body-small) !important;
+    --element-threshold-normal: var(--wcag3-body-normal) !important;
+    --element-threshold-large: var(--wcag3-body-large) !important;
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    color: var(--text-contrast) !important;
+    font-family: var(--current-font-family) !important;
+    font-weight: var(--current-font-weight) !important;
+    line-height: var(--current-line-height) !important;
+    letter-spacing: var(--current-letter-spacing) !important;
+}
+
+/* UI elements */
+:where(button, a, label, input, select, textarea) {
+    --element-font-size: var(--optical-size) !important;
+    --element-threshold-small: var(--wcag3-ui-small) !important;
+    --element-threshold-normal: var(--wcag3-ui-normal) !important;
+    --element-threshold-large: var(--wcag3-ui-large) !important;
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    color: var(--text-contrast) !important;
+    font-family: var(--current-font-family) !important;
+    font-weight: var(--current-font-weight) !important;
+    line-height: var(--current-line-height) !important;
+    letter-spacing: var(--current-letter-spacing) !important;
+}
+
+/* =============== WriteFreely Targeting ============= */
+body#post article:not(.norm) {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+body#collection article:not(.norm) {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+#blog-title {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+#blog-title a {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+nav {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+nav a {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+input#title.norm {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+textarea.norm {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+span.norm {
+    font-family: var(--font-sans) !important;
+    font-size: var(--optical-size) !important;
+    font-weight: var(--font-weight-base) !important;
+    line-height: var(--line-height-normal) !important;
+    text-wrap: pretty !important;
+}
+
+/* =============== Heading Styling =============== */
+:where(h1, h2, h3, h4, h5, h6) {
+    --element-threshold-small: var(--wcag3-heading-small) !important;
+    --element-threshold-normal: var(--wcag3-heading-normal) !important;
+    --element-threshold-large: var(--wcag3-heading-large) !important;
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    --current-font-family: var(--font-serif) !important;
+    --current-font-weight: var(--font-weight-serif-adaptive) !important;
+    --current-line-height: var(--line-height-heading) !important;
+    --current-letter-spacing: var(--letter-spacing-heading) !important;
+    font-feature-settings: var(--font-features-serif);
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    color: var(--heading-contrast) !important;
+    font-family: var(--font-serif) !important;
+    font-weight: var(--font-weight-heading) !important;
+    margin-block-start: var(--block-margin) !important;
+    margin-block-end: var(--paragraph-margin) !important;
+    text-wrap: balance !important;
+    line-height: var(--line-height-heading) !important;
+    letter-spacing: var(--letter-spacing-heading) !important;
+    --current-semantic-target: var(--wcag3-heading-normal) !important;
+    text-align: match-parent !important;
+    text-justify: inter-character !important;
+}
+
+h1,
+h2,
+h3 {
+    --letter-spacing-ratio: 0.004 !important;
+    font-variation-settings:
+        "wght" var(--font-weight-serif-adaptive),
+        "GRAD" 88; /* Optical compensation for bold weights */
+}
+
+h1 {
+    font-size: var(--h1) !important;
+    --element-font-size: var(--h1) !important;
+    font-weight: clamp(
+        600,
+        var(--font-weight-serif-adaptive) +
+            clamp(0, (100vw - 1200px) * 0.1, 100),
+        /* Only add weight above 1200px */ 900
+    ) !important;
+}
+h2 {
+    font-size: var(--h2) !important;
+    --element-font-size: var(--h2) !important;
+}
+h3 {
+    font-size: var(--h3) !important;
+    --element-font-size: var(--h3) !important;
+}
+h4 {
+    font-size: var(--h4) !important;
+    --element-font-size: var(--h4) !important;
+}
+h5 {
+    font-size: var(--h5) !important;
+    --element-font-size: var(--h5) !important;
+}
+h6 {
+    font-size: var(--h6) !important;
+    --element-font-size: var(--h6) !important;
+}
+
+/* =============== Code Elements Styling =============== */
+:where(code, pre, kbd, samp) {
+    --element-font-size: calc(var(--optical-size) * 0.9) !important;
+    --element-threshold-small: var(--wcag3-body-small) !important;
+    --element-threshold-normal: var(--wcag3-body-normal) !important;
+    --element-threshold-large: var(--wcag3-body-large) !important;
+    --current-semantic-target: var(--get-size-based-threshold) !important;
+    --current-font-family: var(--font-mono) !important;
+    --current-font-weight: var(--font-weight-mono-adaptive) !important;
+    --current-line-height: var(--line-height-code) !important;
+    --current-letter-spacing: 0 !important;
+    --letter-spacing-min: 0 !important;
+    --letter-spacing-ratio: 0.001 !important;
+    font-feature-settings: var(--font-features-mono);
+    font-variant-numeric: tabular-nums slashed-zero;
+    color: var(--code-contrast) !important;
+    font-family: var(--font-mono) !important;
+    line-height: var(--line-height-code) !important;
+}
+
+/* =============== Blockquote Elements =============== */
+:where(
+    blockquote,
+    blockquote p,
+    blockquote li,
+    blockquote span,
+    blockquote div
+) {
+    --element-font-size: var(--optical-size) !important;
+    --element-threshold-small: var(--wcag3-body-small) !important;
+    --element-threshold-normal: var(--wcag3-body-normal) !important;
+    --element-threshold-large: var(--wcag3-body-large) !important;
+    --current-semantic-target: calc(
+        var(--get-size-based-threshold) * 0.9
+    ) !important;
+    --current-font-family: var(--font-sans) !important;
+    --current-font-weight: var(--font-weight-sans-adaptive) !important;
+    --current-line-height: calc(var(--line-height-normal) * 0.95) !important;
+    --current-letter-spacing: -0.01em !important;
+    --text-alpha: 0.8 !important;
+    color: var(--blockquote-contrast) !important;
+    font-style: italic !important;
+}
+
+/* =============== Content Elements ============= */
+p {
+    margin-block-end: var(--paragraph-margin) !important;
+    word-spacing: 0.05em !important;
+    hanging-punctuation: first !important;
+}
+
+li {
+    margin-block-end: var(--paragraph-margin) !important;
+    word-spacing: 0.05em !important;
+    hanging-punctuation: first !important;
+}
+
+blockquote {
+    padding-inline-start: 1em !important;
+    border-inline-start: 0.25em solid var(--blockquote-contrast) !important;
+    margin-block-start: var(--block-margin) !important;
+    margin-block-end: 0 !important;
+    opacity: 0.9 !important;
+    hanging-punctuation: allow-end !important;
+    word-spacing: -0.03em !important;
+    --current-semantic-target: var(--blockquote-text-min-delta) !important;
+}
+
+blockquote p {
+    margin-block: clamp(0.25em, 1lh, 0.75em) !important;
+}
+
+blockquote li {
+    margin-block: clamp(0.25em, 1lh, 0.75em) !important;
+}
+
+blockquote p:first-child {
+    margin-block-start: 0 !important;
+}
+
+blockquote li:first-child {
+    margin-block-start: 0 !important;
+}
+
+blockquote p:last-child {
+    margin-block-end: 0 !important;
+}
+
+blockquote li:last-child {
+    margin-block-end: 0 !important;
+}
+
+/* =============== Automatic Background Application =============== */
+header {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+}
+
+footer {
+    background-color: oklch(
+        var(--rp-overlay-l) var(--rp-overlay-c) var(--rp-overlay-h)
+    ) !important;
+    --element-bg-l: var(--rp-overlay-l) !important;
+}
+
+nav {
+    background-color: oklch(
+        var(--rp-subtle-l) var(--rp-subtle-c) var(--rp-subtle-h)
+    ) !important;
+    --element-bg-l: var(--rp-subtle-l) !important;
+}
+
+aside {
+    background-color: oklch(
+        var(--rp-muted-l) var(--rp-muted-c) var(--rp-muted-h)
+    ) !important;
+    --element-bg-l: var(--rp-muted-l) !important;
+}
+
+/* =============== Code Differentiation ============= */
+code:not(pre code) {
+    --code-bg-min-delta: calc(
+        pow(
+                (var(--wcag3-body-small) * 0.5) / var(--apca-multiplier),
+                1 / var(--apca-exponent)
+            ) -
+            var(--apca-offset)
+    ) !important;
+
+    --code-bg-l: clamp(
+        0.2,
+        calc(
+            var(--parent-bg-l) > 0.5 ?
+                min(0.95, var(--parent-bg-l) + var(--code-bg-min-delta)): max(
+                    0.15,
+                    var(--parent-bg-l) - var(--code-bg-min-delta)
+                )
+        ),
+        0.95
+    ) !important;
+
+    background: oklch(var(--code-bg-l) 0.05 290 / 0.15);
+    --element-bg-l: var(--code-bg-l) !important;
+    padding: 0.2em 0.4em !important;
+    border-radius: 0.25em !important;
+    font-size: 0.9em !important;
+}
+
+pre {
+    padding: 1em !important;
+    border-radius: 0.5em !important;
+    background-color: oklch(var(--code-block-bg-l) 0.03 240) !important;
+    --element-bg-l: var(--code-block-bg-l) !important;
+    border: 0.0625em solid
+        oklch(clamp(0.4, calc(var(--parent-bg-l) + 0.1), 0.8) 0.05 290 / 0.4) !important;
+    overflow-x: auto !important;
+    margin-block-end: var(--block-margin) !important;
+    font-variant-ligatures: none !important;
+}
+
+pre code {
+    --element-bg-l: var(--code-block-bg-l) !important;
+    --parent-bg-l: var(--code-block-bg-l) !important;
+
+    /* Recalculate code text minimum lightness */
+    --code-text-min-l: clamp(
+        0.7,
+        calc(var(--parent-bg-l) + var(--code-text-min-delta)),
+        0.95
+    ) !important;
+
+    /* Apply updated contrast */
+    color: oklch(var(--code-text-min-l) var(--code-c) var(--code-h)) !important;
+
+    font-size: 0.85em !important;
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    text-wrap: nowrap !important;
+    --current-semantic-target: var(--wcag3-body-small) !important;
+    --element-bg-l: var(--code-block-bg-l) !important;
+    text-wrap: pretty !important;
+}
+
+/* =============== Special Components =============== */
+section {
+    margin-block-end: 2em !important;
+}
+
+article {
+    margin-block-end: 2em !important;
+}
+
+main > section:nth-child(odd) {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 2em !important;
+}
+
+main > section:nth-child(even) {
+    background-color: oklch(
+        var(--rp-overlay-l) var(--rp-overlay-c) var(--rp-overlay-h)
+    ) !important;
+    --element-bg-l: var(--rp-overlay-l) !important;
+    padding: 2em !important;
+}
+
+.card {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+[class*="card"] {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+.container {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+[class*="container"] {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+.box {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+[class*="box"] {
+    background-color: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    ) !important;
+    --element-bg-l: var(--rp-surface-l) !important;
+    padding: 1.5em !important;
+    border-radius: 0.5em !important;
+}
+
+.card,
+[class*="card"],
+.container,
+[class*="container"],
+.box,
+[class*="box"] {
+    box-shadow: 0 0.125em 0.5em
+        oklch(
+            var(--shadow-contrast-l) 0.02 270 /
+                clamp(0.1, calc(1 - var(--parent-bg-l)), 0.3)
+        ) !important;
+}
+
+/* For UI elements - buttons, links, form controls */
+:where(button, a, label, input, select, textarea) {
+    color: oklch(
+        clamp(
+                var(--ui-text-min-l),
+                var(--text-main-l),
+                calc(var(--ui-text-min-l) + 0.2)
+            )
+            var(--text-c, var(--rp-text-c)) var(--text-h, var(--rp-text-h)) /
+            var(--text-alpha)
+    ) !important;
+    font-variant-numeric: lining-nums tabular-nums !important;
+}
+
+button,
+input,
+select,
+textarea,
+label {
+    --current-semantic-target: var(--wcag3-ui-normal) !important;
+    hyphens: none !important;
+}
+
+label {
+    text-spacing: normal !important;
+    hanging-punctuation: none !important;
+}
+
+/* SVG icons */
+svg:not([aria-hidden="true"]) {
+    color: oklch(
+        clamp(var(--ui-text-min-l), var(--text-main-l), 0.9) var(--text-c)
+            var(--text-h)
+    ) !important;
+}
+
+/* For images of text */
+img[alt]:not([alt=""]) {
+    filter: contrast(
+        calc(var(--parent-bg-l) * 1.8 - var(--text-min-l) * 0.8)
+    ) !important;
+}
+
+/* JUSTIFICATION */
+p,
+li,
+div:not([class]),
+span:not([class]),
+td,
+th {
+    text-align: start !important;
+    text-justify: auto !important;
+    text-align-last: start !important;
+    hyphens: manual !important;
+    letter-spacing: clamp(
+        var(--letter-spacing-min),
+        calc(var(--optical-size) * var(--letter-spacing-ratio)),
+        var(--letter-spacing-max)
+    ) !important;
+    text-indent: var(--text-indent-base) !important;
+
+    overflow-wrap: break-word !important;
+    hanging-punctuation: allow-end !important;
+
+    --current-semantic-target: var(--wcag3-body-normal) !important;
+}
+
+/* Progressive Enhancement Layers */
+@media (min-width: 40em) {
+    :root {
+        --rag-adjustment: clamp(
+            calc(var(--optical-size) * 0.2),
+            calc(var(--optical-size) * 0.3),
+            0.5rem
+        ) !important;
+    }
+
+    p {
+        hyphens: auto !important;
+        --text-indent-base: clamp(
+            0rem,
+            var(--text-indent-base),
+            1.5rem
+        ) !important;
+    }
+}
+
+@media (min-width: 64em) {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        text-align: start !important;
+        text-justify: auto !important;
+    }
+
+    p {
+        text-indent: 0 !important;
+        text-align: justify !important;
+        text-justify: inter-word !important;
+    }
+}
+
+/* Hybrid Transition System */
+@media (prefers-reduced-motion: no-preference) {
+    p,
+    li,
+    blockquote {
+        transition:
+            text-indent var(--text-transition-duration) ease-out,
+            hanging-punctuation var(--text-transition-duration) ease-out !important;
+    }
+
+    @media (prefers-contrast: more) {
+        :root {
+            --text-transition-duration: calc(
+                var(--text-transition-base) * 0.66
+            ) !important;
+        }
+    }
+
+    @media (prefers-contrast: less) {
+        :root {
+            --text-transition-duration: calc(
+                var(--text-transition-base) * 1.33
+            ) !important;
+        }
+    }
+}
+
+/* Combined Overflow Protection */
+@supports (text-wrap: pretty) {
+    p,
+    li,
+    blockquote p {
+        text-wrap: pretty !important;
+    }
+}
+
+blockquote {
+    margin-inline: calc(var(--rag-adjustment) * -1) !important;
+    padding-inline: clamp(0.5rem, var(--rag-adjustment), 1.5rem) !important;
+    max-inline-size: calc(100% - (var(--rag-adjustment) * 2)) !important;
+}
+
+/* Enhanced List System (Solution 5) */
+li {
+    text-indent: calc(var(--text-indent-base) * -1) !important;
+    padding-inline-start: calc(var(--optical-size) * 1.25) !important;
+
+    li {
+        text-indent: calc(var(--text-indent-base) * -0.75) !important;
+        padding-inline-start: var(--optical-size) !important;
+    }
+}
+
+/* =============== Strategic Performance Optimization ============= */
+article {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 500px !important;
+}
+
+section {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 500px !important;
+}
+
+main {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 500px !important;
+}
+
+header {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 200px !important;
+}
+
+footer {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 200px !important;
+}
+
+nav {
+    content-visibility: auto !important;
+    contain-intrinsic-size: auto 200px !important;
+}
+
+/* =============== Accessibility Enhancements ============= */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.e-content a:focus-visible,
+nav a:focus-visible,
+#blog-title a:focus-visible {
+    outline: 0.2em solid
+        oklch(var(--focus-indicator-l) var(--rp-love-c) var(--rp-love-h)) !important;
+    outline-offset: 0.2em !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Adjust base colors for dark mode */
+        --rp-base-l: 0.15 !important;
+        --rp-surface-l: 0.12 !important;
+        --rp-overlay-l: 0.18 !important;
+
+        /* Increase contrast requirements for dark mode */
+        --wcag3-body-normal: 90 !important;
+        --wcag3-heading-normal: 80 !important;
+
+        /* Ensure minimum lightness values are recalculated for dark backgrounds */
+        --body-text-min-l: clamp(
+            0.6,
+            calc(var(--parent-bg-l) + var(--body-text-min-delta)),
+            0.9
+        ) !important;
+        --code-text-min-l: clamp(
+            0.65,
+            calc(var(--parent-bg-l) + var(--code-text-min-delta)),
+            0.95
+        ) !important;
+        --heading-text-min-l: clamp(
+            0.65,
+            calc(var(--parent-bg-l) + var(--heading-text-min-delta)),
+            0.9
+        ) !important;
+        --blockquote-text-min-l: clamp(
+            0.55,
+            calc(var(--parent-bg-l) + var(--blockquote-text-min-delta)),
+            0.85
+        ) !important;
+        --focus-indicator-l: clamp(
+            0.6,
+            calc(var(--parent-bg-l) + var(--focus-indicator-min-delta)),
+            0.9
+        ) !important;
+        --code-block-bg-l: clamp(
+            0.05,
+            calc(var(--parent-bg-l) - 0.05),
+            0.15
+        ) !important;
+    }
+}

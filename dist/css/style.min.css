@@ -1,0 +1,21 @@
+@layer reset, base, typography, colors, components, utilities;@layer reset{@layer reset{*{text-rendering:optimizeLegibility!important;text-size-adjust:100%!important}*,
+    *::after,
+    *::before{animation:none!important;background:none!important;border-color:currentColor!important;border-radius:0!important;border-style:solid!important;box-shadow:none!important;box-sizing:border-box!important;color:inherit!important;display:revert!important;filter:none!important;flex:none!important;font-family:inherit!important;font-size:inherit!important;font-style:normal!important;font-weight:normal!important;grid-template-columns:none!important;grid-template-rows:none!important;height:auto!important;letter-spacing:normal!important;line-height:normal!important;margin:0!important;max-height:none!important;max-width:none!important;min-height:0!important;min-width:0!important;opacity:1!important;outline:none!important;overflow:visible!important;padding:0!important;position:static!important;text-align:start!important;text-decoration:none!important;text-shadow:none!important;text-transform:none!important;transform:none!important;transition:none!important;vertical-align:baseline!important;visibility:visible!important;white-space:normal!important;width:auto!important;word-spacing:normal!important;z-index:auto!important}
+    #blog-title,
+    #collection,
+    #post,
+    #wrapper,
+    .content,
+    .e-content,
+    .meta,
+    .post,
+    .posts,body,
+    button,
+    footer,
+    header,
+    input,
+    nav,
+    textarea{all:initial!important;box-sizing:border-box!important;font-family:system-ui,sans-serif!important}.hljs,
+    [class*=" hljs-"],
+    [class^="hljs-"]{background:transparent!important;color:inherit!important;font-style:normal!important;font-weight:normal!important}@keyframes continuously-reset{from{opacity:1}to{opacity:1}}body *{animation:continuously-reset 1s infinite;animation-delay:calc(var(--continuously-reset-delay, 0) * 1ms)}}}@layer base{}@layer typography{@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap")}@layer colors{}@layer components{}@layer utilities{}
+/*# sourceMappingURL=style.min.css.map */
