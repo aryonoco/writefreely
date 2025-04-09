@@ -1,0 +1,19 @@
+@keyframes continuously-reset {
+    0% {
+        Vacuum-style reset trigger
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    100% {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+}
+
+:root {
+    --continuously-reset-delay: 0;
+}
+
+* {
+    animation: continuously-reset 1s infinite linear !important;
+}

@@ -1,0 +1,766 @@
+@layer wf-reset {
+    /* === Core Structural & Atomic Reset === */
+    :where(
+    [id^="wf-"],
+    [class*="wf-"]:not([class*="user-"]),
+    .wf-article, .wf-comments, .wf-highlight, .prose, .edit-page,
+    .code-block, .admin-actions, .features, .row.features, .pager,
+    .flat-select, .inputform,
+    /* ProseMirror */
+    .ProseMirror, .ProseMirror-menubar, .ProseMirror-menu,
+    .ProseMirror-menuitem, .ProseMirror-menu-dropdown, .ProseMirror-prompt,
+    .ProseMirror-menubar-wrapper, .ProseMirror-menu-dropdown-menu,
+    .ProseMirror-menu-submenu, .ProseMirror-gapcursor,
+    /* Navigation */
+    .dropdown-nav, nav#manage, [class*="dropdown-"],
+    /* Modals & Alerts */
+    .modal, #overlay, .alert, .flash,
+    /* Forms & Editors */
+    .inputform, .ace_editor,
+    /* Article Mixins */
+    [class*="article-code"], [class*="article-blockquote"],
+    [class*="article-p"], [class*="article-title"],
+    /* Effects & Utils */
+    .del-undo, .effect, .fade-out, [class*="fade-"], [class*="effect-"],
+    /* ID-based Components */
+    body.wf, #post, #collection, #blog-title, #wrapper, nav#admin, header.admin,
+    /* Template Specifics */
+    #readmore-sell,
+    /* Other Elements */
+    .blip
+  ) {
+        all: unset !important;
+        box-sizing: border-box !important;
+        display: revert !important;
+        animation: none !important;
+        transition: none !important;
+        /* Add vendor-prefixed versions */
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -o-transition: none !important;
+        -webkit-animation: none !important;
+        -moz-animation: none !important;
+        -ms-animation: none !important;
+        -o-animation: none !important;
+        color: inherit !important;
+        background: transparent !important;
+        border-color: currentColor !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font: inherit !important;
+        opacity: 1 !important;
+        position: static !important; /* Reset positioning from effects */
+        top: 0 !important;
+        left: 0 !important;
+    }
+
+    /* === Font Family Normalization === */
+    :where(
+        body,
+        button,
+        input,
+        textarea,
+        .wf-article,
+        .prose,
+        body.wf,
+        body#post,
+        body#collection,
+        body#subpage,
+        body#pad,
+        body#pad-sub,
+        .dropdown-nav,
+        nav#manage,
+        [class*="dropdown-"],
+        .e-content,
+        .admin-actions,
+        .pager,
+        .features,
+        .loginbtn.btn
+    ) {
+        font-family: var(--font-sans) !important;
+    }
+
+    :where(.serif, [class*="serif-"], h1, h2, h3, h4, h5, h6) {
+        font-family: var(--font-serif) !important;
+    }
+
+    :where(
+        pre,
+        code,
+        .mono,
+        .code-block,
+        textarea.mono,
+        textarea.code,
+        .hljs,
+        [class*="hljs-"]
+    ) {
+        font-family: var(--font-mono) !important;
+    }
+
+    /* === Typography & Text Properties Reset === */
+    :where(
+        .wf-article,
+        .prose,
+        .e-content,
+        .admin-actions,
+        .pager,
+        .features,
+        p.split,
+        .features p,
+        .alert,
+        .flash
+    ) {
+        font-size: 1rem !important;
+        line-height: inherit !important;
+        letter-spacing: normal !important;
+        text-rendering: optimizeLegibility !important; /* From original */
+        font-weight: inherit !important;
+        font-style: inherit !important;
+        white-space: normal !important;
+        word-wrap: normal !important; /* From original article-p mixin */
+    }
+
+    /* Textarea specific white-space */
+    :where(textarea.mono, textarea.code) {
+        white-space: pre-wrap !important; /* Use pre-wrap from pad reset */
+    }
+
+    /* === Color System Neutralization === */
+    /* Inline style variables */
+    :where(
+        [style*="--primary:"],
+        [style*="--secondary:"],
+        [style*="--subheaders:"]
+    ) {
+        --primary: inherit !important;
+        --secondary: inherit !important;
+        --subheaders: inherit !important;
+        --dangerCol: inherit !important;
+        --textLinkColor: inherit !important;
+    }
+
+    /* Theme class variables */
+    :where([class*="light"], [class*="dark"]) {
+        --lightBG: inherit !important;
+        --darkBG: inherit !important;
+        --lightTextColor: inherit !important;
+        --darkTextColor: inherit !important;
+        --lightLinkColor: inherit !important;
+        --darkLinkColor: inherit !important;
+    }
+
+    /* Final color inheritance enforcement */
+    :where(
+        [class*="wf-"],
+        [id^="wf-"],
+        [class*="hljs-"],
+        .ProseMirror blockquote,
+        .features p,
+        .alert,
+        .flash,
+        [class*="article-blockquote"],
+        body#pad-sub #posts date,
+        body#pad-sub .atoms .electron,
+        .blip
+    ) {
+        color: inherit !important;
+    }
+    :where(
+        [class*="wf-"],
+        [id^="wf-"],
+        [class*="hljs-"],
+        body#pad.light,
+        body#pad.dark,
+        body#pad-sub.light,
+        body#pad-sub.dark,
+        #tools,
+        #belt,
+        .modal,
+        .alert.info,
+        .alert.success,
+        .alert.danger,
+        #login-form,
+        #login-form input
+    ) {
+        background-color: transparent !important; /* Combine background resets */
+        background: transparent !important; /* Ensure coverage */
+    }
+    :where(
+        [class*="wf-"],
+        [id^="wf-"],
+        [class*="hljs-"],
+        #tools,
+        #belt,
+        .modal,
+        .alert.info,
+        .alert.success,
+        .alert.danger,
+        hr,
+        .loginbtn.btn
+    ) {
+        border-color: currentColor !important; /* Combine border-color resets */
+    }
+
+    /* === Syntax Highlighting Neutralization === */
+    :where(
+    pre code.hljs, .hljs, [class*="hljs-"],
+    .hljs > span, .hljs-span, .hljs-subst, .hljs-tag,
+    pre, code, .code-block, /* Combine with general code elements */
+    .hljs *, .hljs *::before, .hljs *::after /* Atomic reset */
+  ) {
+        all: unset !important;
+        display: block !important;
+        font-family: var(--font-mono) !important;
+        background: transparent !important;
+        color: inherit !important;
+        white-space: pre-wrap !important; /* Consistent white-space */
+        tab-size: 4 !important;
+        padding: 0 !important;
+        border: none !important;
+        font: inherit !important; /* From atomic reset */
+    }
+
+    :where(.hljs::before, .hljs::after, .hljs-attr) {
+        all: unset !important; /* Ensure hljs-attr is reset */
+        content: "" !important;
+        display: none !important;
+    }
+
+    /* Enhanced Code Block Container Reset */
+    :where(pre.code-block, .code-block) {
+        background: transparent !important;
+        border: 1px solid !important;
+        padding: 1em !important;
+        overflow-x: auto !important;
+
+        > code {
+            /* Keep nested code reset */
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            display: block !important; /* Ensure block display */
+            white-space: pre-wrap !important;
+        }
+    }
+
+    /* Rose Pine variable mapping (final inheritance) */
+    :where(.hljs, [class*="hljs-"]) {
+        --hljs-text: var(--rp-text) !important;
+        --hljs-background: var(--rp-surface) !important;
+        --hljs-comment: var(--rp-subtle) !important;
+        --hljs-keyword: var(--rp-pine) !important;
+        --hljs-string: var(--rp-gold) !important;
+        --hljs-title: var(--rp-foam) !important;
+        --hljs-type: var(--rp-iris) !important;
+        --hljs-attribute: var(--rp-rose) !important; /* Ensure this maps */
+    }
+
+    /* === Interactive Elements Reset === */
+    :where(
+    [class*="wf-btn"], .pager a, .admin-actions .btn, nav#admin a,
+    .flat-select, .inputform, .loginbtn.btn, button#theme-toggle,
+    /* ProseMirror menu items */
+    .ProseMirror-menuitem,
+    /* Pad links */
+     body#pad a:not(.wf-reset-preserve), body#pad-sub a:not(.wf-reset-preserve),
+    /* Footer nav links */
+     footer nav a, footer ul a
+  ) {
+        all: revert !important; /* Use revert for interactive elements */
+        box-sizing: border-box !important;
+        font: inherit !important;
+        color: inherit !important;
+        background: transparent !important;
+        border: 1px solid !important;
+        margin: 0 !important;
+        padding: 0.5em 1em !important;
+        cursor: pointer !important; /* Ensure pointer cursor */
+        display: revert !important; /* Restore revert display */
+        white-space: normal !important;
+        text-decoration: underline !important; /* Consistent default underline */
+    }
+
+    /* Specific padding/display adjustments */
+    :where(footer nav a, footer ul a) {
+        padding: 0 !important;
+        display: inline !important;
+    }
+    :where(.dropdown-nav a, nav#manage a) {
+        padding: 0 !important;
+        border: none !important;
+        text-decoration: none !important;
+    }
+    :where(.loginbtn.btn) {
+        height: auto !important;
+        margin: 0.25em !important;
+        padding: 0.5em 1em !important; /* Standardize padding */
+        text-decoration: none !important;
+    }
+    :where(.pager.sub a.toggle) {
+        float: none !important; /* From original pager reset */
+        margin: 0 !important;
+        border: 1px solid !important; /* Ensure border */
+        padding: 0.5em 1em !important; /* Ensure padding */
+    }
+    :where(.pager.sub a:not(.toggle)) {
+        border-bottom: 1px solid !important; /* From original */
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        padding: 0.5em 1em !important; /* Ensure consistent padding */
+        text-decoration: none !important;
+    }
+
+    /* Hover states */
+    :where(
+      .pager a:hover, .pager.sub a:not(.toggle):hover,
+      .loginbtn.btn:hover,
+      body#pad a:not(.wf-reset-preserve):hover, body#pad-sub a:not(.wf-reset-preserve):hover,
+      footer nav a:hover, footer ul a:hover,
+      nav#admin a.selected:hover /* Added from tmp3 */
+   ) {
+        background: transparent !important;
+        text-decoration: inherit !important; /* Allow underline/dotted */
+        color: inherit !important;
+        border-color: currentColor !important;
+    }
+    :where(
+        body#pad a:not(.wf-reset-preserve):hover,
+        body#pad-sub a:not(.wf-reset-preserve):hover
+    ) {
+        text-decoration-style: dotted !important;
+    }
+    :where(footer nav a:hover, footer ul a:hover) {
+        text-decoration: underline !important; /* Explicit underline for footer */
+    }
+
+    /* Selected states */
+    :where(nav#admin a.selected, .pager a.selected, .pager.sub a.selected) {
+        background: transparent !important;
+        font-weight: inherit !important; /* Keep font-weight reset */
+        border-color: currentColor !important;
+    }
+
+    /* === Layout & Spacing Reset === */
+    :where(
+    .features, .row.features, .pager.sub, .admin-actions, #tools, #belt,
+    #editor, .editor, body#pad-sub #posts, .atoms, /* Pad post list */
+    /* General structure */
+     #wrapper, header.admin,
+     /* Login page structure */
+     .row.signinbtns, .or
+  ) {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        height: auto !important;
+        overflow: visible !important;
+        float: none !important; /* Reset floats */
+        justify-content: normal !important; /* Reset flex alignment */
+        flex-wrap: nowrap !important; /* Reset flex wrap */
+    }
+    :where(.features div, .row.features div) {
+        /* Nested feature divs */
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    :where(.or) {
+        margin: 1em 0 !important; /* Restore OR margin */
+    }
+    :where(.or p) {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    :where(.or hr) {
+        margin: 0 !important;
+        border-color: currentColor !important;
+    }
+    /* Admin actions spacing */
+    :where(.admin-actions > .btn + .btn) {
+        margin-left: 0 !important;
+    }
+    /* Readmore spacing */
+    :where(#readmore-sell .cta + .cta) {
+        margin-left: 0 !important;
+    }
+
+    /* === Media, Forms & Icons === */
+    :where(
+    img[class*="ic-"], .ic-18dp, .ic-24dp, /* Icons */
+    textarea, input:not([type="submit"]), select, /* Form Elements */
+    .flat-select, .ace_editor, /* Specific form-like elements */
+     .loginbtn.btn img /* Login button image */
+  ) {
+        all: unset !important; /* Apply unset first */
+        box-sizing: border-box !important;
+        width: auto !important;
+        height: auto !important;
+        vertical-align: baseline !important;
+        display: inline !important;
+        font: inherit !important;
+        color: inherit !important;
+        background: transparent !important;
+        border: 1px solid !important;
+        padding: 0.25em !important;
+        margin: 0 !important; /* Reset margin */
+        white-space: normal !important; /* Default white-space */
+    }
+    /* Specific adjustments */
+    :where(
+        textarea,
+        input:not([type="submit"]),
+        select,
+        .flat-select,
+        .ace_editor
+    ) {
+        display: block !important; /* Most form elements should be block */
+        width: 100% !important; /* Default to full width */
+        padding: 0.5em !important; /* Consistent padding */
+    }
+    :where(img[class*="ic-"], .ic-18dp, .ic-24dp, .loginbtn.btn img) {
+        display: inline !important;
+        border: none !important;
+        padding: 0 !important;
+        width: auto !important; /* Let image size control */
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+    }
+    :where(.loginbtn.btn img) {
+        height: 1em !important; /* Restore specific height */
+        vertical-align: baseline !important;
+    }
+    :where(textarea) {
+        white-space: pre-wrap !important; /* Keep pre-wrap for textareas */
+    }
+    :where(input:not([type="submit"])) {
+        /* Login form width */
+        max-width: none !important;
+    }
+    :where(.modal input) {
+        /* Modal input specific */
+        background: transparent !important;
+        border-bottom: 1px solid !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        display: block !important;
+        width: 100% !important;
+    }
+    :where(.form-hint) {
+        /* Modal form hint */
+        color: inherit !important;
+        background: transparent !important;
+    }
+
+    /* === Material Icons Font Reset === */
+    @font-face {
+        font-family: "Material Icons";
+        src: local("Invalid Font Name"), local("System UI") !important; /* Trick to prevent loading */
+        font-display: swap !important;
+    }
+
+    :where(.material-icons, [class*="material-icons-"]) {
+        font-family: var(--font-sans) !important; /* Use fallback font */
+        font-weight: inherit !important;
+        font-style: inherit !important;
+        font-size: 1em !important;
+        display: inline !important;
+        width: auto !important;
+        height: auto !important;
+        line-height: inherit !important;
+        vertical-align: text-bottom !important; /* Consistent alignment */
+        -webkit-font-smoothing: inherit !important;
+        -moz-osx-font-smoothing: inherit !important;
+        font-feature-settings: normal !important;
+    }
+
+    /* === List Resets === */
+    :where(.ProseMirror ul, .ProseMirror ol, article ul, article ol) {
+        padding-left: 1em !important;
+        list-style: revert !important;
+    }
+
+    :where(ul ul, ol ol, ul ol, ol ul) {
+        padding-left: 1em !important;
+        list-style: inherit !important;
+    }
+
+    :where(
+        ul.collections,
+        ul.errors,
+        ul.add-integrations,
+        .dropdown-nav > ul,
+        .dropdown-nav ul ul,
+        nav#manage > ul,
+        nav#manage ul ul,
+        footer ul
+    ) {
+        list-style: none !important;
+        padding: 0 !important;
+        margin: 0 !important; /* Ensure margin is reset */
+        max-height: none !important; /* For dropdowns */
+        position: static !important; /* For dropdowns */
+        display: revert !important; /* Ensure display */
+
+        li {
+            /* Reset list items within */
+            all: unset !important;
+            display: revert !important;
+            line-height: inherit !important;
+            position: static !important;
+            margin: revert !important;
+            &:hover,
+            &.open {
+                /* Dropdown hover state */
+                background: transparent !important;
+            }
+        }
+    }
+
+    /* === ProseMirror Specific Resets === */
+    :where(.ProseMirror) {
+        position: relative !important;
+        height: auto !important;
+        overflow: visible !important;
+        white-space: normal !important;
+        padding: 0 !important; /* Ensure padding reset */
+        margin: 0 !important; /* Ensure margin reset */
+    }
+
+    :where(.ProseMirror p) {
+        margin: 1em 0 !important;
+    }
+
+    :where(.ProseMirror blockquote) {
+        border-left: 2px solid !important;
+        margin: 1em 0 !important;
+        padding-left: 1em !important;
+        color: inherit !important; /* Ensure color inherits */
+        display: block !important; /* Ensure block display */
+    }
+
+    :where(.ProseMirror-hideselection *)::selection {
+        background: var(--rp-text) !important;
+        color: var(--rp-base) !important;
+    }
+
+    @keyframes ProseMirror-cursor-blink {
+        to {
+            visibility: visible !important;
+        }
+    }
+
+    /* === Table Resets === */
+    :where(table.classy, table.downloads, article table) {
+        border-collapse: separate !important;
+        border-spacing: 0.5em !important;
+        width: auto !important; /* Override potential full width */
+        margin: revert !important; /* Allow margin */
+
+        :is(th, td) {
+            border: none !important;
+            padding: revert !important;
+            background: transparent !important;
+            text-align: revert !important;
+            vertical-align: revert !important;
+        }
+    }
+
+    /* === Modern Effect Neutralization === */
+    :where(
+    [class*="gradient"], [style*="gradient("],
+    [class*="shadow"], [class*="drop-shadow"],
+    [class*="rounded"], [class*="border-radius"],
+    [class*="transform"], [class*="scale"], [class*="rotate"],
+    [class*="opacity"], /* Add opacity class */
+    [class*="columns"], /* Add columns class */
+    [class*="user-select"] /* Add user-select class */
+  ) {
+        background-image: none !important;
+        filter: none !important;
+        -webkit-box-shadow: none !important;
+        -moz-box-shadow: none !important;
+        box-shadow: none !important;
+        -webkit-border-radius: 0 !important;
+        -moz-border-radius: 0 !important;
+        border-radius: 0 !important;
+        -webkit-transform: none !important;
+        -moz-transform: none !important;
+        -ms-transform: none !important;
+        -o-transform: none !important;
+        transform: none !important;
+        -moz-opacity: 1 !important; /* From opacity mixin */
+        -khtml-opacity: 1 !important; /* From opacity mixin */
+        -webkit-opacity: 1 !important; /* From opacity mixin */
+        opacity: 1 !important;
+        -moz-columns: auto !important; /* From columns mixin */
+        -webkit-columns: auto !important; /* From columns mixin */
+        columns: auto !important; /* From columns mixin */
+        column-gap: normal !important;
+        column-rule: none !important;
+        -webkit-user-select: auto !important; /* From user-select mixin */
+        -moz-user-select: auto !important; /* From user-select mixin */
+        -ms-user-select: auto !important; /* From user-select mixin */
+        user-select: auto !important; /* From user-select mixin */
+    }
+
+    /* Comprehensive animation/transition reset (redundant but safe) */
+    :where(
+        [class*="transition-"],
+        #tools,
+        #tools .hidden,
+        .pad-theme-transition,
+        [class*="pad-theme-"],
+        .effect,
+        .fade-out,
+        [class*="fade-"],
+        [class*="effect-"]
+    ) {
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -o-transition: none !important;
+        transition: none !important;
+        -webkit-animation: none !important;
+        -moz-animation: none !important;
+        -ms-animation: none !important;
+        -o-animation: none !important;
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    /* Nuclear Animation Override */
+    @keyframes fadeIn {
+        to {
+            opacity: 1 !important;
+        }
+    }
+    @keyframes fadeOut {
+        to {
+            opacity: 1 !important;
+        }
+    }
+
+    /* === Template-Specific Structure & Overrides === */
+    /* Body structure */
+    :where(body#post, body#collection, body#subpage) {
+        -webkit-font-smoothing: auto !important;
+        -moz-osx-font-smoothing: auto !important;
+    }
+    :where(body#pad, body#pad-sub) {
+        /* Basic resets covered by core */
+        #tools #belt a img.ic-24dp {
+            /* Specific nested icon */
+            vertical-align: baseline !important;
+        }
+    }
+    /* Header */
+    :where(body#post header, body#subpage header) {
+        /* Core resets cover most, ensure opacity */
+        opacity: 1 !important;
+    }
+    :where(body#post header h1, body#subpage header h1) {
+        font-size: inherit !important;
+        font-weight: inherit !important;
+    }
+
+    /* Article structure */
+    :where(body#post article, body#collection article, body#subpage article) {
+        white-space: normal !important;
+        display: block !important; /* Ensure block display */
+
+        /* Neutralize inline display patterns */
+        :is(h1, h2, h3, h4, h5, h6, p, ul, ol, code, pre, blockquote, table) {
+            /* Added pre, blockquote, table */
+            display: revert !important;
+            margin: revert !important;
+        }
+
+        /* Specific nested elements */
+        :where(h2#title.dated, time.dt-published) {
+            margin: 0 !important;
+            color: inherit !important;
+            display: block !important;
+            font: inherit !important;
+        }
+    }
+
+    /* Pad Post List */
+    :where(body#pad-sub #posts, .atoms) {
+        h3 a,
+        h4 a {
+            color: inherit !important;
+            &:hover {
+                color: inherit !important;
+                text-decoration: inherit !important; /* Match general link hover */
+            }
+        }
+        date,
+        .electron {
+            opacity: 0.75 !important;
+        }
+    }
+
+    /* Footer */
+    :where(footer nav, footer ul) {
+        /* List resets cover structure */
+        /* Link resets cover 'a' */
+    }
+
+    /* === Responsive Overrides === */
+    @media (max-width: 600px) {
+        :where(.modal) {
+            width: 100% !important;
+            left: 0 !important;
+        }
+        :where(#tools #belt a) {
+            display: inline-block !important;
+            padding: 0.5em !important; /* Restore padding */
+        }
+        :where(.half-col, .third, .fourth, .row:not(.admin-actions)) {
+            /* Layout columns */
+            flex-direction: column !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important; /* Ensure no padding */
+        }
+        :where(.features div + div) {
+            /* Feature padding */
+            padding-left: 0 !important;
+        }
+        :where(.pager:not(.pages)) {
+            /* Pager display */
+            display: block !important;
+            margin: 0 !important;
+        }
+        :where(body#pad textarea, body#pad-sub textarea) {
+            /* Pad textarea */
+            letter-spacing: normal !important;
+        }
+    }
+
+    @media (min-width: 50em) {
+        :where(.ProseMirror, .ProseMirror-menubar, #title) {
+            /* Editor width */
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+    }
+
+    /* === Print Optimization === */
+    @media print {
+        :where(header, footer, nav, #tools) {
+            display: none !important;
+        }
+
+        :where(article, textarea) {
+            break-inside: avoid !important;
+            position: static !important;
+            height: auto !important;
+            margin: 0 !important; /* Ensure no margin */
+        }
+    }
+}

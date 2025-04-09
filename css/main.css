@@ -1,0 +1,348 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap");
+
+@layer wf-reset, base, typography, theme, elements, utilities, enhancements, adaptations;
+:root {
+    /* --- Essential Metrics & Constants --- */
+    /* 1. Optical Size Base (CSS Fonts Level 5) */
+    --optical-size: clamp(1rem, calc(1rem + 0.15dvw), min(1.25rem, 10dvh));
+    /* 2. Logarithmic Scale Constant (For calc() in @typography) */
+    --heading-scale: 1.333; /* Represents ~Major Third scale */
+    /* 3. Layout Constants */
+    --content-safe-area: env(safe-area-inset-top, 0px)
+        env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+        env(safe-area-inset-left, 0px);
+    /* Base ratio (unitless) */
+    --line-height-base-ratio: 1.5;
+
+    /* --- Font System --- */
+    /* 4. Font Stack  */
+    --font-sans: "Inclusive Sans", ui-sans-serif, sans-serif;
+    --font-serif: "Source Serif 4", ui-serif, serif;
+    --font-mono: "Fira Code", ui-monospace, monospace;
+
+    /* 5. Font Feature Controls */
+    --font-features-sans: "kern" on, "liga" on, "calt" on;
+    --font-features-serif: "kern" on, "liga" on, "dlig" on, "onum" on, "salt" on;
+    --font-features-mono: "ss01" on, "ss03" on, "zero" on;
+    /* --- Accessibility & Color Foundation --- */
+    /* 6. WCAG 3.0 Draft APCA Threshold Values */
+    --wcag3-body-large: 60;
+    --wcag3-body-normal: 75;
+    --wcag3-body-small: 90;
+    --wcag3-heading-large: 55;
+    --wcag3-heading-normal: 65;
+    --wcag3-heading-small: 75;
+    --wcag3-ui-large: 40;
+    --wcag3-ui-normal: 60;
+    --wcag3-ui-small: 75;
+    --wcag3-non-text-normal: 30;
+    --wcag3-disabled-text: 45;
+    --wcag3-placeholder: 50;
+    /* --- Base Context Defaults  --- */
+    --current-font-family: var(--font-sans);
+    --current-font-weight: 400;
+    --current-line-height: var(--line-height-base-ratio);
+    --current-letter-spacing: 0em;
+    --text-alpha: 0.9;
+
+    /* === Rosé Pine Color Palette (OKLCH Components) === */
+    --rp-base-l: 0.95;
+    --rp-base-c: 0.0126;
+    --rp-base-h: 71.33;
+    --rp-surface-l: 0.99;
+    --rp-surface-c: 0.0091;
+    --rp-surface-h: 76.61;
+    --rp-overlay-l: 0.94;
+    --rp-overlay-c: 0.0174;
+    --rp-overlay-h: 73.07;
+    --rp-muted-l: 0.67;
+    --rp-muted-c: 0.0267;
+    --rp-muted-h: 298.62;
+    --rp-subtle-l: 0.58;
+    --rp-subtle-c: 0.0448;
+    --rp-subtle-h: 291.04;
+    --rp-text-l: 0.46;
+    --rp-text-c: 0.0625;
+    --rp-text-h: 289.83;
+    --rp-love-l: 0.6;
+    --rp-love-c: 0.1061;
+    --rp-love-h: 2.62;
+    --rp-gold-l: 0.76;
+    --rp-gold-c: 0.1457;
+    --rp-gold-h: 70;
+    --rp-rose-l: 0.7;
+    --rp-rose-c: 0.1054;
+    --rp-rose-h: 23.36;
+    --rp-pine-l: 0.5;
+    --rp-pine-c: 0.0775;
+    --rp-pine-h: 227.7;
+    --rp-foam-l: 0.63;
+    --rp-foam-c: 0.0664;
+    --rp-foam-h: 210.06;
+    --rp-iris-l: 0.62;
+    --rp-iris-c: 0.0723;
+    --rp-iris-h: 305.67;
+    --rp-highlight-low-l: 0.95;
+    --rp-highlight-low-c: 0.0105;
+    --rp-highlight-low-h: 58.21;
+    --rp-highlight-med-l: 0.89;
+    --rp-highlight-med-c: 0.0061;
+    --rp-highlight-med-h: 31.06;
+    --rp-highlight-high-l: 0.84;
+    --rp-highlight-high-c: 0.0061;
+    --rp-highlight-high-h: 334;
+
+    /* === Combined OKLCH Color Variables === */
+    --rp-base: oklch(var(--rp-base-l) var(--rp-base-c) var(--rp-base-h));
+    --rp-surface: oklch(
+        var(--rp-surface-l) var(--rp-surface-c) var(--rp-surface-h)
+    );
+    --rp-overlay: oklch(
+        var(--rp-overlay-l) var(--rp-overlay-c) var(--rp-overlay-h)
+    );
+    --rp-muted: oklch(var(--rp-muted-l) var(--rp-muted-c) var(--rp-muted-h));
+    --rp-subtle: oklch(
+        var(--rp-subtle-l) var(--rp-subtle-c) var(--rp-subtle-h)
+    );
+    --rp-text: oklch(var(--rp-text-l) var(--rp-text-c) var(--rp-text-h));
+    --rp-love: oklch(var(--rp-love-l) var(--rp-love-c) var(--rp-love-h));
+    --rp-gold: oklch(var(--rp-gold-l) var(--rp-gold-c) var(--rp-gold-h));
+    --rp-rose: oklch(var(--rp-rose-l) var(--rp-rose-c) var(--rp-rose-h));
+    --rp-pine: oklch(var(--rp-pine-l) var(--rp-pine-c) var(--rp-pine-h));
+    --rp-foam: oklch(var(--rp-foam-l) var(--rp-foam-c) var(--rp-foam-h));
+    --rp-iris: oklch(var(--rp-iris-l) var(--rp-iris-c) var(--rp-iris-h));
+    --rp-highlight-low: oklch(
+        var(--rp-highlight-low-l) var(--rp-highlight-low-c)
+            var(--rp-highlight-low-h)
+    );
+    --rp-highlight-med: oklch(
+        var(--rp-highlight-med-l) var(--rp-highlight-med-c)
+            var(--rp-highlight-med-h)
+    );
+    --rp-highlight-high: oklch(
+        var(--rp-highlight-high-l) var(--rp-highlight-high-c)
+            var(--rp-highlight-high-h)
+    );
+}
+
+@import url("layers/wf-reset.css") layer(wf-reset);
+
+@layer base {
+    :root {
+        /* === Base Semantic Color Component Assignments === */
+        /* Default components used in final color calculation in @adaptations */
+        --text-c: var(--rp-text-c);
+        --text-h: var(--rp-text-h);
+        --code-c: var(--rp-foam-c);
+        --code-h: var(--rp-foam-h);
+        --heading-c: var(--rp-iris-c);
+        --heading-h: var(--rp-iris-h);
+        --blockquote-c: var(--rp-muted-c);
+        --blockquote-h: var(--rp-muted-h);
+        /* === Base Font Metrics === */
+        --font-weight-base: 400;
+        --font-weight-heading: 600;
+        --text-size-large: 1.5rem;
+        --text-size-normal: 1.125rem;
+
+        /* === Base Typography Controls (Line Height, Spacing) === */
+        /* Dynamic line-height calculations using em */
+        --line-height-body: calc(
+            var(--line-height-base-ratio) *
+                (1 + 0.15 * (1 - var(--optical-size) / 1rem))
+        );
+        --line-height-heading: calc(var(--line-height-base-ratio) * 0.85);
+        --line-height-code: calc(var(--line-height-base-ratio) * 1.2);
+        --letter-spacing-base: -0.01em;
+        --letter-spacing-heading: -0.03em;
+        --letter-spacing-min: 0.01em;
+        --letter-spacing-max: 0.06em;
+        --letter-spacing-ratio: 0.0025; /* 0.25% of font size */
+        /* === Base Spacing and Layout === */
+        --block-margin: 1.5em;
+        --paragraph-margin: 0.8em;
+
+        /* === Base Justification System Values === */
+        --text-justification: unsafe;
+        --justification-threshold: 50ch;
+        --rag-adjustment: clamp(
+            calc(var(--optical-size) * 0.15),
+            calc(var(--optical-size) * 0.25),
+            0.4rem
+        );
+        --text-indent-base: clamp(
+            0.25rem,
+            calc(var(--optical-size) * 0.5),
+            1rem
+        );
+
+        /* === Base Transition Timing === */
+        --text-transition-base: 0.3s;
+        --text-transition-duration: var(
+            --text-transition-base
+        ); /* Default duration */
+    }
+    html,
+    body {
+        padding: var(--content-safe-area);
+    }
+}
+@layer typography {
+    /* Adaptive Letter Spacing */
+    * {
+        /* Apply generally, refine per element type if needed */
+        letter-spacing: clamp(
+            var(--letter-spacing-min),
+            calc(var(--optical-size) * var(--letter-spacing-ratio)),
+            var(--letter-spacing-max)
+        );
+    }
+    :root {
+        /* === Typographic Scale Calculation === */
+        /* Calculate --h* variables using pre-layer --optical-size and --heading-scale */
+        --h6: calc(var(--optical-size) * var(--heading-scale));
+        --h5: calc(var(--h6) * var(--heading-scale));
+        --h4: calc(var(--h5) * var(--heading-scale));
+        --h3: calc(var(--h4) * var(--heading-scale));
+        --h2: calc(var(--h3) * var(--heading-scale));
+        --h1: calc(var(--h2) * var(--heading-scale));
+    }
+    /* === Base Typography Application === */
+    /* Apply base font settings to body/html */
+    body,
+    html {
+        font-family: var(--font-sans);
+        font-size: var(--optical-size);
+        font-weight: var(--font-weight-base);
+        font-optical-sizing: auto;
+        font-synthesis: none;
+        line-height: var(--line-height-body);
+        letter-spacing: var(--letter-spacing-base);
+        font-feature-settings: var(--font-features-sans);
+        font-variant-numeric: lining-nums proportional-nums;
+        text-wrap: pretty;
+    }
+    /* === Heading Typography Application === */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-serif);
+        font-weight: var(--font-weight-heading); /* Base heading weight */
+        line-height: var(--line-height-heading);
+        letter-spacing: var(--letter-spacing-heading);
+        font-feature-settings: var(--font-features-serif);
+        font-variant-numeric: oldstyle-nums proportional-nums; /* Heading numerals */
+        text-wrap: balance;
+    }
+    h1 {
+        font-size: var(--h1);
+    }
+    h2 {
+        font-size: var(--h2);
+    }
+    h3 {
+        font-size: var(--h3);
+    }
+    h4 {
+        font-size: var(--h4);
+    }
+    h5 {
+        font-size: var(--h5);
+    }
+    h6 {
+        font-size: var(--h6);
+    }
+
+    /* === Code Typography Application === */
+    code,
+    pre,
+    kbd,
+    samp {
+        font-family: var(--font-mono);
+        line-height: var(--line-height-code);
+        letter-spacing: 0; /* No extra letter spacing for mono */
+        font-feature-settings: var(--font-features-mono);
+        font-variant-numeric: tabular-nums slashed-zero; /* Mono features */
+    }
+
+    /* === Text Processing & Layout Application === */
+    /* Apply base margins */
+    p,
+    ul,
+    ol,
+    dl,
+    figure,
+    blockquote,
+    pre {
+        margin-block-start: 0;
+        margin-block-end: var(--paragraph-margin);
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-block-start: var(--block-margin);
+        margin-block-end: var(--paragraph-margin);
+    }
+
+    /* Base Justification/Wrapping */
+    p,
+    li,
+    dd,
+    dt {
+        text-align: start;
+        text-justify: auto;
+        hyphens: manual;
+        overflow-wrap: break-word;
+        hanging-punctuation: first allow-end;
+        text-indent: var(--text-indent-base);
+        word-spacing: 0.05em;
+    }
+}
+
+@layer adaptations {
+    :root {
+        /* === Adaptive Font Weight Calculation === */
+        /* Normalize font size relative to 1rem for calculations */
+        --font-size-normalized: calc(var(--optical-size) / 1rem);
+        /* Calculate adaptive weights based on base weights and font size */
+        --font-weight-sans-adaptive: clamp(
+            300,
+            round(
+                nearest,
+                calc(
+                    var(--font-weight-base) * var(--font-size-normalized, 1) *
+                        0.9
+                ),
+                100
+            ),
+            700
+        );
+        --font-weight-serif-adaptive: clamp(
+            500,
+            round(
+                nearest,
+                calc(
+                    var(--font-weight-heading) *
+                        var(--font-size-normalized, 1) * 1.1
+                ),
+                100
+            ),
+            800
+        );
+        --font-weight-mono-adaptive: clamp(
+            300,
+            round(
+                nearest,
+                calc(var(--font-weight-base) * var(--font-size-normalized, 1)),
+                100
+            ),
+            700
+        );
+    }
+}
