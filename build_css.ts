@@ -10,13 +10,12 @@ declare global {
   }
 }
 
-type CssLayerName =
-  | "reset"
-  | "base"
-  | "typography"
-  | "colors"
-  | "components"
-  | "utilities";
+type CssLayerName = "wf-reset";
+// | "base"
+// | "typography"
+// | "colors"
+// | "components"
+// | "utilities";
 type CssLayerPath = `css/layers/${CssLayerName}.css`;
 
 interface CssLayer {
@@ -33,12 +32,12 @@ const { $, file, write }: typeof Bun = Bun;
 const outputPath = "dist/css/style.min.css" as const;
 
 const layers = [
-  { name: "reset", path: "css/layers/reset.css" },
-  { name: "base", path: "css/layers/base.css" },
-  { name: "typography", path: "css/layers/typography.css" },
-  { name: "colors", path: "css/layers/colors.css" },
-  { name: "components", path: "css/layers/components.css" },
-  { name: "utilities", path: "css/layers/utilities.css" },
+  { name: "wf-reset", path: "css/layers/wf-reset.css" },
+  // { name: "base", path: "css/layers/base.css" },
+  // { name: "typography", path: "css/layers/typography.css" },
+  // { name: "colors", path: "css/layers/colors.css" },
+  // { name: "components", path: "css/layers/components.css" },
+  // { name: "utilities", path: "css/layers/utilities.css" },
 ] as const satisfies readonly CssLayer[];
 
 const dependencies = [
@@ -142,17 +141,28 @@ async function main() {
           discardComments: { removeAll: true },
           discardDuplicates: true,
           discardEmpty: true,
-          normalizeWhitespace: true,
-          normalizeUnicode: true,
+          // normalizeWhitespace: true,
+          normalizeWhitespace: false,
+          normalizeUnicode: false,
+          // calc: false,
           calc: false,
+          // colormin: false,
           colormin: false,
+          // convertValues: false,
           convertValues: false,
+          // minifyFontValues: false,
           minifyFontValues: false,
+          // minifyGradients: false,
           minifyGradients: false,
+          // mergeIdents: false,
           mergeIdents: false,
+          // mergeLonghand: false,
           mergeLonghand: false,
-          mergeRules: false,
+          // mergeRules: false,
+          mergeRules: true,
+          // minifyParams: false,
           minifyParams: false,
+          // minifySelectors: false,
           minifySelectors: false,
           normalizePositions: false,
           normalizeUrl: false,
