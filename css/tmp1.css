@@ -1,212 +1,164 @@
-:where(.dropdown-nav a, nav#manage a) {
-    padding: var(--wf-padding) !important;
-    border: var(--wf-border) !important;
-    text-decoration: var(--wf-text-decoration) !important;
-}
-:where(.loginbtn.btn) {
-    height: var(--wf-height) !important;
-    margin: var(--wf-margin) !important;
-    padding: var(--wf-padding) !important;
-    text-decoration: var(--wf-text-decoration) !important;
-}
-:where(.pager.sub a.toggle) {
-    float: var(--wf-float) !important;
-    margin: var(--wf-margin) !important;
-    border: var(--wf-border) !important;
-    padding: var(--wf-padding) !important;
-}
-:where(.pager.sub a:not(.toggle)) {
-    border-bottom: var(--wf-border-bottom) !important;
-    border-top: var(--wf-border-top) !important;
-    border-left: var(--wf-border-left) !important;
-    border-right: var(--wf-border-right) !important;
-    padding: var(--wf-padding) !important;
-    text-decoration: var(--wf-text-decoration) !important;
-}
-
-/* Hover states */
-:where(
-    .pager a:hover,
-    .pager.sub a:not(.toggle):hover,
-    .loginbtn.btn:hover,
-    body#pad a:not(.wf-reset-preserve):hover,
-    body#pad-sub a:not(.wf-reset-preserve):hover,
-    footer nav a:hover,
-    footer ul a:hover,
-    nav#admin a.selected:hover
-) {
-    background: var(--wf-background) !important;
-    text-decoration: var(--wf-text-decoration) !important;
-    color: var(--wf-color) !important;
-    border-color: var(--wf-border-color) !important;
+/* === Structural & Atomic Reset === */
+*,
+::before,
+::after {
+    all: revert;
 }
 :where(
-    body#pad a:not(.wf-reset-preserve):hover,
-    body#pad-sub a:not(.wf-reset-preserve):hover
-) {
-    text-decoration-style: var(--wf-text-decoration-style) !important;
-}
-:where(footer nav a:hover, footer ul a:hover) {
-    text-decoration: var(--wf-text-decoration) !important;
-}
+    /* IDs & Attributes */
+    #blog-title, #collection, #editor, #login-form, #login-form input, #overlay, #post, #readmore-sell, #tools, #tools .hidden, #wrapper,
+    [id^="wf-"], [class*="wf-"], [class*="wf-btn"], [class*="wf-"]:not([class*="user-"]),
+    [class*="article-blockquote"], [class*="article-code"], [class*="article-p"], [class*="article-title"],
+    [class*="border-radius"], [class*="columns"], [class*="drop-shadow"], [class*="dropdown-"],
+    [class*="gradient"], [class*="opacity"], [class*="rotate"], [class*="scale"], [class*="shadow"],
+    [class*="transform"], [class*="transition-"], [class*="user-select"],
+    [style*="gradient("],
 
-/* Selected states */
-:where(nav#admin a.selected, .pager a.selected, .pager.sub a.selected) {
-    background: var(--wf-background) !important;
-    font-weight: var(--wf-font-weight) !important;
-    border-color: var(--wf-border-color) !important;
-}
-
-/* === Layout & Spacing Reset === */
-:where(
-    .features,
-    .row.features,
-    .pager.sub,
-    .admin-actions,
-    #tools,
-    #belt,
-    #editor,
-    .editor,
-    body#pad-sub #posts,
-    .atoms,
-    #wrapper,
-    header.admin,
-    .row.signinbtns,
-    .or
-) {
-    display: var(--wf-display) !important;
-    margin: var(--wf-margin) !important;
-    padding: var(--wf-padding) !important;
-    position: var(--wf-position) !important;
-    height: var(--wf-height) !important;
-    overflow: var(--wf-overflow) !important;
-    float: var(--wf-float) !important;
-    justify-content: var(--wf-justify-content) !important;
-    flex-wrap: var(--wf-flex-wrap) !important;
-}
-:where(.features div, .row.features div) {
-    padding: var(--wf-padding) !important;
-    margin: var(--wf-margin) !important;
-}
-:where(.or) {
-    margin: var(--wf-margin) !important;
-}
-:where(.or p) {
-    background: var(--wf-background) !important;
-    padding: var(--wf-padding) !important;
-}
-:where(.or hr) {
-    margin: var(--wf-margin) !important;
-    border-color: var(--wf-border-color) !important;
-}
-:where(.admin-actions > .btn + .btn) {
-    margin-left: var(--wf-margin-left) !important;
-}
-:where(#readmore-sell .cta + .cta) {
-    margin-left: var(--wf-margin-left) !important;
-}
-
-/* === Media, Forms & Icons === */
-:where(
-    img[class*="ic-"],
-    .ic-18dp,
-    .ic-24dp,
-    textarea,
-    input:not([type="submit"]),
-    select,
-    .flat-select,
+    /* Components & Layout */
+    .ProseMirror, .ProseMirror blockquote, .ProseMirror p, .ProseMirror ul, .ProseMirror ol, .ProseMirror-gapcursor, .ProseMirror-menu, .ProseMirror-menubar, .ProseMirror-menubar-wrapper, .ProseMirror-menu-dropdown, .ProseMirror-menu-dropdown-menu, .ProseMirror-menu-submenu, .ProseMirror-menuitem, .ProseMirror-prompt,
     .ace_editor,
-    .loginbtn.btn img
-) {
-    all: var(--wf-all) !important;
-    box-sizing: var(--wf-box-sizing) !important;
-    width: var(--wf-width) !important;
-    height: var(--wf-height) !important;
-    vertical-align: var(--wf-vertical-align) !important;
-    display: var(--wf-display) !important;
-    font: var(--wf-font) !important;
-    color: var(--wf-color) !important;
-    background: var(--wf-background) !important;
-    border: var(--wf-border) !important;
-    padding: var(--wf-padding) !important;
-    margin: var(--wf-margin) !important;
-    white-space: var(--wf-white-space) !important;
-}
-:where(
-    textarea,
-    input:not([type="submit"]),
-    select,
+    .admin-actions, .admin-actions .btn, .admin-actions > .btn + .btn,
+    .alert, .alert.danger, .alert.info, .alert.success,
+    .atoms,
+    .blip,
+    /* Basic code block styling */
+    .code-block,
+    .del-undo,
+    .dropdown-nav, .dropdown-nav a,
+    .e-content,
+    .edit-page,
+    .editor,
+    .effect, [class*="effect-"],
+    .fade-out, [class*="fade-"],
+    .features, .features div, .features p,
     .flat-select,
-    .ace_editor
+    .flash,
+    .form-hint,
+    .hljs, .hljs *, .hljs *::after, .hljs *::before, .hljs > span, .hljs-attr, .hljs-span, .hljs-subst, .hljs-tag, .hljs::after, .hljs::before, [class*="hljs-"], /* Basic HLJS elements */
+    .ic-18dp, .ic-24dp, img[class*="ic-"],
+    .inputform,
+    .loginbtn.btn, .loginbtn.btn img, .loginbtn.btn:hover,
+    .material-icons, [class*="material-icons-"],
+    .modal, .modal input,
+    .mono,
+    .or, .or hr, .or p,
+    .pad-theme-transition, [class*="pad-theme-"],
+    .pager, .pager a, .pager a.selected, .pager a:hover, .pager.sub, .pager.sub a.selected, .pager.sub a.toggle, .pager.sub a:not(.toggle), .pager.sub a:not(.toggle):hover,
+    .prose,
+    .row.features, .row.features div,
+    .row.signinbtns,
+    .serif, [class*="serif-"],
+    .wf-article, .wf-comments, .wf-highlight,
+
+    /* Structure & Content Elements */
+    article ol, article ul,
+    body, body#collection, body#pad, body#pad-sub, body#pad-sub #posts date, body#pad-sub .atoms .electron, body#pad-sub a:not(.wf-reset-preserve), body#pad-sub a:not(.wf-reset-preserve):hover, body#pad-sub.dark, body#pad-sub.light, body#pad a:not(.wf-reset-preserve), body#pad a:not(.wf-reset-preserve):hover, body#pad.dark, body#pad.light, body#post, body#post header, body#post header h1, body#subpage, body#subpage header, body#subpage header h1, body.wf,
+    button, button#theme-toggle,
+    /* Basic code element */
+    code,
+    footer nav a, footer nav a:hover, footer ul a, footer ul a:hover,
+    h1, h2, h3, h4, h5, h6,
+    header.admin,
+    hr,
+    input, input:not([type="submit"]),
+    nav#admin, nav#admin a, nav#admin a.selected, nav#admin a.selected:hover,
+    nav#manage, nav#manage a,
+    ol ol, ol ul,
+    p.split,
+    /* Basic pre/code elements */
+    pre, pre code.hljs,
+    select,
+    textarea, textarea.code, textarea.mono,
+    ul ol, ul ul,
+    #readmore-sell .cta + .cta
 ) {
-    display: var(--wf-display) !important;
-    width: var(--wf-width) !important;
-    padding: var(--wf-padding) !important;
+    color: revert;
+    background: revert;
 }
-:where(img[class*="ic-"], .ic-18dp, .ic-24dp, .loginbtn.btn img) {
-    display: var(--wf-display) !important;
-    border: var(--wf-border) !important;
-    padding: var(--wf-padding) !important;
-    width: var(--wf-width) !important;
-    height: var(--wf-height) !important;
-    max-width: var(--wf-max-width) !important;
-    max-height: var(--wf-max-height) !important;
+
+/* ==========NEW SECTION ==========*/
+
+/* Nuclear Animation Override */
+@keyframes fadeIn {
+    to {
+        opacity: var(--wf-opacity) !important;
+    }
 }
-:where(.loginbtn.btn img) {
-    height: var(--wf-height) !important;
-    vertical-align: var(--wf-vertical-align) !important;
+@keyframes fadeOut {
+    to {
+        opacity: var(--wf-opacity) !important;
+    }
 }
-:where(textarea) {
-    white-space: var(--wf-white-space) !important;
-}
-:where(input:not([type="submit"])) {
-    max-width: var(--wf-max-width) !important;
-}
-:where(.modal input) {
-    background: var(--wf-background) !important;
-    border-bottom: var(--wf-border-bottom) !important;
-    border-top: var(--wf-border-top) !important;
-    border-left: var(--wf-border-left) !important;
-    border-right: var(--wf-border-right) !important;
-    display: var(--wf-display) !important;
-    width: var(--wf-width) !important;
-}
-:where(.form-hint) {
-    color: var(--wf-color) !important;
-    background: var(--wf-background) !important;
+
+@keyframes ProseMirror-cursor-blink {
+    to {
+        visibility: var(--wf-visibility) !important;
+    }
 }
 
 /* === Material Icons Font Reset === */
 @font-face {
-    font-family: var(--wf-font-family) !important;
-    src: var(--wf-src) !important;
-    font-display: var(--wf-font-display) !important;
+    font-family: "Material Icons";
+    src: local("Invalid Font Name"), local("System UI") !important; /* Trick to prevent loading */
+    font-display: swap !important;
 }
 
-:where(.material-icons, [class*="material-icons-"]) {
-    font-family: var(--wf-font-family) !important;
-    font-weight: var(--wf-font-weight) !important;
-    font-style: var(--wf-font-style) !important;
-    font-size: var(--wf-font-size) !important;
-    display: var(--wf-display) !important;
-    width: var(--wf-width) !important;
-    height: var(--wf-height) !important;
-    line-height: var(--wf-line-height) !important;
-    vertical-align: var(--wf-vertical-align) !important;
-    font-feature-settings: var(--wf-font-feature-settings) !important;
+/* === Color System Neutralization === */
+/* Inline style variables */
+:where(
+    [style*="--primary:"],
+    [style*="--secondary:"],
+    [style*="--subheaders:"]
+) {
+    --primary: revert !important;
+    --secondary: revert !important;
+    --subheaders: revert !important;
+    --dangerCol: revert !important;
+    --textLinkColor: revert !important;
 }
 
-/* === List Resets === */
-:where(.ProseMirror ul, .ProseMirror ol, article ul, article ol) {
-    padding-left: var(--wf-padding-left) !important;
-    list-style: var(--wf-list-style) !important;
+/* Theme class variables */
+:where([class*="light"], [class*="dark"]) {
+    --lightBG: revert !important;
+    --darkBG: revert !important;
+    --lightTextColor: revert !important;
+    --darkTextColor: revert !important;
+    --lightLinkColor: revert !important;
+    --darkLinkColor: revert !important;
 }
 
-:where(ul ul, ol ol, ul ol, ol ul) {
-    padding-left: var(--wf-padding-left) !important;
-    list-style: var(--wf-list-style) !important;
+/* === hljs Resets === */
+
+:where(.hljs, [class*="hljs-"]) {
+    --hljs-text: var(--wf-hljs-text) !important;
+    --hljs-background: var(--wf-hljs-background) !important;
+    --hljs-comment: var(--wf-hljs-comment) !important;
+    --hljs-keyword: var(--wf-hljs-keyword) !important;
+    --hljs-string: var(--wf-hljs-string) !important;
+    --hljs-title: var(--wf-hljs-title) !important;
+    --hljs-type: var(--wf-hljs-type) !important;
+    --hljs-attribute: var(--wf-hljs-attribute) !important;
 }
 
+/* === Nested & Complex Selector Resets === */
+
+/* Code Block Container Reset */
+:where(pre.code-block, .code-block) {
+    background: var(--wf-background) !important;
+    border: var(--wf-border) !important;
+    padding: var(--wf-padding) !important;
+    overflow-x: var(--wf-overflow-x) !important;
+    > code {
+        /* Nested code reset */
+        background: var(--wf-background) !important;
+        border: var(--wf-border) !important;
+        padding: var(--wf-padding) !important;
+        display: var(--wf-display) !important;
+        white-space: var(--wf-white-space) !important;
+    }
+}
+
+/* List Resets with nested li styling */
 :where(
     ul.collections,
     ul.errors,
@@ -220,11 +172,11 @@
     list-style: var(--wf-list-style) !important;
     padding: var(--wf-padding) !important;
     margin: var(--wf-margin) !important;
-    max-height: var(--wf-max-height) !important;
-    position: var(--wf-position) !important;
-    display: var(--wf-display) !important;
-
+    max-height: var(--wf-max-height) !important; /* For dropdowns */
+    position: var(--wf-position) !important; /* For dropdowns */
+    display: var(--wf-display) !important; /* Ensure display */
     li {
+        /* Reset list items within */
         all: var(--wf-all) !important;
         display: var(--wf-display) !important;
         line-height: var(--wf-line-height) !important;
@@ -237,46 +189,18 @@
     }
 }
 
-/* === ProseMirror Specific Resets === */
-:where(.ProseMirror) {
-    position: var(--wf-position) !important;
-    height: var(--wf-height) !important;
-    overflow: var(--wf-overflow) !important;
-    white-space: var(--wf-white-space) !important;
-    padding: var(--wf-padding) !important;
-    margin: var(--wf-margin) !important;
-}
-
-:where(.ProseMirror p) {
-    margin: var(--wf-margin) !important;
-}
-
-:where(.ProseMirror blockquote) {
-    border-left: var(--wf-border-left) !important;
-    margin: var(--wf-margin) !important;
-    padding-left: var(--wf-padding-left) !important;
-    color: var(--wf-color) !important;
-    display: var(--wf-display) !important;
-}
-
+/* ProseMirror selection */
 :where(.ProseMirror-hideselection *)::selection {
     background: var(--wf-background) !important;
     color: var(--wf-color) !important;
 }
 
-@keyframes ProseMirror-cursor-blink {
-    to {
-        visibility: var(--wf-visibility) !important;
-    }
-}
-
-/* === Table Resets === */
+/* Table Resets */
 :where(table.classy, table.downloads, article table) {
     border-collapse: var(--wf-border-collapse) !important;
     border-spacing: var(--wf-border-spacing) !important;
     width: var(--wf-width) !important;
     margin: var(--wf-margin) !important;
-
     :is(th, td) {
         border: var(--wf-border) !important;
         padding: var(--wf-padding) !important;
@@ -286,87 +210,30 @@
     }
 }
 
-/* === Modern Effect Neutralization === */
-:where(
-    [class*="gradient"],
-    [style*="gradient("],
-    [class*="shadow"],
-    [class*="drop-shadow"],
-    [class*="rounded"],
-    [class*="border-radius"],
-    [class*="transform"],
-    [class*="scale"],
-    [class*="rotate"],
-    [class*="opacity"],
-    [class*="columns"],
-    [class*="user-select"]
-) {
-    background-image: var(--wf-background-image) !important;
-    filter: var(--wf-filter) !important;
-    box-shadow: var(--wf-box-shadow) !important;
-    border-radius: var(--wf-border-radius) !important;
-    transform: var(--wf-transform) !important;
-    opacity: var(--wf-opacity) !important;
-    columns: var(--wf-columns) !important;
-    column-gap: var(--wf-column-gap) !important;
-    column-rule: var(--wf-column-rule) !important;
-    user-select: var(--wf-user-select) !important;
-}
-
-:where(
-    [class*="transition-"],
-    #tools,
-    #tools .hidden,
-    .pad-theme-transition,
-    [class*="pad-theme-"],
-    .effect,
-    .fade-out,
-    [class*="fade-"],
-    [class*="effect-"]
-) {
-    transition: var(--wf-transition) !important;
-    animation: var(--wf-animation) !important;
-    opacity: var(--wf-opacity) !important;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: var(--wf-opacity) !important;
-    }
-}
-@keyframes fadeOut {
-    to {
-        opacity: var(--wf-opacity) !important;
-    }
-}
-
-/* === Template-Specific Structure & Overrides === */
-:where(body#post, body#collection, body#subpage) {
-    -webkit-font-smoothing: var(--wf-webkit-font-smoothing) !important;
-    -moz-osx-font-smoothing: var(--wf-moz-osx-font-smoothing) !important;
-}
+/* Template-Specific Nested Structure & Overrides */
 :where(body#pad, body#pad-sub) {
     #tools #belt a img.ic-24dp {
+        /* Specific nested icon */
         vertical-align: var(--wf-vertical-align) !important;
     }
 }
-:where(body#post header, body#subpage header) {
-    opacity: var(--wf-opacity) !important;
-}
-:where(body#post header h1, body#subpage header h1) {
-    font-size: var(--wf-font-size) !important;
-    font-weight: var(--wf-font-weight) !important;
+
+:where(.ProseMirror-hideselection *)::selection {
+    background: var(--wf-background) !important;
+    color: var(--wf-color) !important;
 }
 
 :where(body#post article, body#collection article, body#subpage article) {
     white-space: var(--wf-white-space) !important;
-    display: var(--wf-display) !important;
+    display: var(--wf-display) !important; /* Ensure block display */
 
+    /* Reset inline display patterns */
     :is(h1, h2, h3, h4, h5, h6, p, ul, ol, code, pre, blockquote, table) {
         display: var(--wf-display) !important;
         margin: var(--wf-margin) !important;
     }
 
+    /* Specific nested elements */
     :where(h2#title.dated, time.dt-published) {
         margin: var(--wf-margin) !important;
         color: var(--wf-color) !important;
@@ -398,28 +265,33 @@
     }
     :where(#tools #belt a) {
         display: var(--wf-display) !important;
-        padding: var(--wf-padding) !important;
+        padding: var(--wf-padding) !important; /* Restore padding */
     }
     :where(.half-col, .third, .fourth, .row:not(.admin-actions)) {
+        /* Layout columns */
         flex-direction: var(--wf-flex-direction) !important;
         width: var(--wf-width) !important;
         margin: var(--wf-margin) !important;
-        padding: var(--wf-padding) !important;
+        padding: var(--wf-padding) !important; /* Ensure no padding */
     }
     :where(.features div + div) {
+        /* Feature padding */
         padding-left: var(--wf-padding-left) !important;
     }
     :where(.pager:not(.pages)) {
+        /* Pager display */
         display: var(--wf-display) !important;
         margin: var(--wf-margin) !important;
     }
     :where(body#pad textarea, body#pad-sub textarea) {
+        /* Pad textarea */
         letter-spacing: var(--wf-letter-spacing) !important;
     }
 }
 
 @media (min-width: 50em) {
     :where(.ProseMirror, .ProseMirror-menubar, #title) {
+        /* Editor width */
         margin-left: var(--wf-margin-left) !important;
         margin-right: var(--wf-margin-right) !important;
         padding-left: var(--wf-padding-left) !important;

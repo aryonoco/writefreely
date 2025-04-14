@@ -1,92 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inclusive+Sans:ital,wght@0,300..700;1,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap");
-
-@layer wf-reset, base, typography, theme, elements, utilities, enhancements, adaptations;
-:root {
-    /* Custom Shadow CSS Properties*/
-    --wf--moz-osx-font-smoothing: auto;
-    --wf--webkit-font-smoothing: auto;
-    --wf-all: revert;
-    --wf-animation: revert;
-    --wf-background: transparent;
-    --wf-background-color: transparent;
-    --wf-background-image: none;
-    --wf-border: revert;
-    --wf-border-bottom: revert;
-    --wf-border-collapse: separate;
-    --wf-border-color: currentColor;
-    --wf-border-left: revert;
-    --wf-border-radius: 0;
-    --wf-border-right: revert;
-    --wf-border-spacing: revert;
-    --wf-border-top: revert;
-    --wf-box-shadow: none;
-    --wf-box-sizing: content-box;
-    --wf-break-inside: revert;
-    --wf-color: revert;
-    --wf-column-gap: normal;
-    --wf-column-rule: none;
-    --wf-columns: auto;
-    --wf-content: revert;
-    --wf-cursor: revert;
-    --wf-display: revert;
-    --wf-filter: none;
-    --wf-flex-direction: revert;
-    --wf-flex-wrap: nowrap;
-    --wf-float: none;
-    --wf-font: revert;
-    --wf-font-display: revert;
-    --wf-font-family: revert;
-    --wf-font-feature-settings: normal;
-    --wf-font-size: revert;
-    --wf-font-style: revert;
-    --wf-font-weight: revert;
-    --wf-height: auto;
-    --wf-hljs-attribute: inherit;
-    --wf-hljs-background: inherit;
-    --wf-hljs-comment: inherit;
-    --wf-hljs-keyword: inherit;
-    --wf-hljs-string: inherit;
-    --wf-hljs-text: inherit;
-    --wf-hljs-title: inherit;
-    --wf-hljs-type: inherit;
-    --wf-justify-content: revert;
-    --wf-left: revert;
-    --wf-letter-spacing: normal;
-    --wf-line-height: revert;
-    --wf-list-style: revert;
-    --wf-margin: revert;
-    --wf-margin-left: revert;
-    --wf-margin-right: revert;
-    --wf-max-height: none;
-    --wf-max-width: none;
-    --wf-opacity: 1;
-    --wf-overflow: visible;
-    --wf-overflow-wrap: normal;
-    --wf-overflow-x: revert;
-    --wf-padding: revert;
-    --wf-padding-left: revert;
-    --wf-padding-right: revert;
-    --wf-position: static;
-    --wf-tab-size: revert;
-    --wf-text-align: revert;
-    --wf-text-box-edge: normal;
-    --wf-text-box-trim: none;
-    --wf-text-decoration: revert;
-    --wf-text-decoration-style: revert;
-    --wf-text-rendering: revert;
-    --wf-text-size-adjust: revert;
-    --wf-text-wrap: wrap;
-    --wf-top: revert;
-    --wf-transform: none;
-    --wf-transition: none;
-    --wf-user-select: auto;
-    --wf-vertical-align: baseline;
-    --wf-visibility: visible;
-    --wf-white-space: revert;
-    --wf-width: revert;
-    --wf-word-wrap: normal;
-}
-
+@layer revert, wf-reset, base, typography, theme, elements, utilities, enhancements, adaptations;
+@import url("layers/revert.css") layer(revert);
 @import url("layers/wf-reset.css") layer(wf-reset);
 
 @layer base {
@@ -98,7 +12,7 @@
         --heading-scale: 1.333; /* Represents ~Major Third scale */
         /* 3. Layout Constants */
         --content-safe-area: env(safe-area-inset-top, 0px)
-            env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+            env(safef-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
             env(safe-area-inset-left, 0px);
         /* Base ratio (unitless) */
         --line-height-base-ratio: 1.5;
