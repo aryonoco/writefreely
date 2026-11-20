@@ -349,6 +349,150 @@ func TestCSRFBehindTLSProxy(t *testing.T) { //nolint:paralleltest // newTemplate
 	}
 }
 
+func TestCSRFWriteWithoutOrigin(t *testing.T) { //nolint:paralleltest // newTemplateTestApp loads the package-level templates
+	type instance struct {
+		app     *App
+		router  *mux.Router
+		session *http.Cookie
+	}
+	instances := map[string]instance{}
+	for _, host := range []string{"https://blog.example.com", "http://localhost:8080"} {
+		app, router, _, session := newCSRFTestApp(t, host)
+		instances[host] = instance{app, router, session}
+	}
+
+	// Under "Referrer-Policy: no-referrer", browsers send a page's writes
+	// with "Origin: null", or with no Origin, and with no Referer, even to
+	// the page's own site. Sec-Fetch-Site still says where a write came
+	// from. Whatever the headers say, a write needs its CSRF token.
+	for _, tc := range []struct { //nolint:paralleltest // each case counts the posts it creates
+		name, host, origin, fetchSite string
+		token                         bool
+		want                          int
+	}{
+		{"https null origin same-origin", "https://blog.example.com", "null", "same-origin", true, http.StatusCreated},
+		{"https null origin same-origin no token", "https://blog.example.com", "null", "same-origin", false, http.StatusForbidden},
+		{"https null origin cross-site", "https://blog.example.com", "null", "cross-site", true, http.StatusForbidden},
+		{"https null origin same-site", "https://blog.example.com", "null", "same-site", true, http.StatusForbidden},
+		{"https null origin no fetch site", "https://blog.example.com", "null", "", true, http.StatusForbidden},
+		{"https no origin same-origin", "https://blog.example.com", "", "same-origin", true, http.StatusCreated},
+		{"https no origin same-origin no token", "https://blog.example.com", "", "same-origin", false, http.StatusForbidden},
+		{"https no origin cross-site", "https://blog.example.com", "", "cross-site", true, http.StatusForbidden},
+		{"https no origin no fetch site", "https://blog.example.com", "", "", true, http.StatusForbidden},
+		{"http null origin", "http://localhost:8080", "null", "", true, http.StatusCreated},
+		{"http null origin same-origin", "http://localhost:8080", "null", "same-origin", true, http.StatusCreated},
+		{"http null origin no token", "http://localhost:8080", "null", "", false, http.StatusForbidden},
+		{"http null origin cross-site", "http://localhost:8080", "null", "cross-site", true, http.StatusForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			in := instances[tc.host]
+			target := strings.Replace(tc.host, "https://", "http://", 1)
+			before := csrfTestPostCount(t, in.app)
+			token, csrfCookie := fetchCSRFToken(t, in.router, target+"/new", in.session)
+
+			req := newCSRFTestPost(t, target+"/api/collections/tester/posts")
+			if tc.origin != "" {
+				req.Header.Set("Origin", tc.origin)
+			}
+			if tc.fetchSite != "" {
+				req.Header.Set("Sec-Fetch-Site", tc.fetchSite)
+			}
+			if tc.token {
+				req.Header.Set("X-CSRF-Token", token)
+			}
+			req.AddCookie(in.session)
+			req.AddCookie(csrfCookie)
+			rec := serveCSRFTest(in.router, req)
+
+			if rec.Code != tc.want {
+				t.Errorf("%s, Origin %q, Sec-Fetch-Site %q, no Referer, token %t: %d %s, want %d",
+					tc.host, tc.origin, tc.fetchSite, tc.token, rec.Code, rec.Body, tc.want)
+			}
+			wantPosts := before
+			if tc.want == http.StatusCreated {
+				wantPosts++
+			}
+			if after := csrfTestPostCount(t, in.app); after != wantPosts {
+				t.Errorf("posts went from %d to %d, want %d", before, after, wantPosts)
+			}
+		})
+	}
+}
+
+func TestCSRFLoginWithoutOrigin(t *testing.T) { //nolint:paralleltest // newTemplateTestApp loads the package-level templates
+	_, router, _, _ := newCSRFTestApp(t, "https://blog.example.com")
+
+	for _, tc := range []struct {
+		fetchSite string
+		token     bool
+		want      int
+	}{
+		{"same-origin", true, http.StatusFound},
+		{"same-origin", false, http.StatusForbidden},
+		{"", true, http.StatusForbidden},
+	} {
+		token, csrfCookie := fetchCSRFToken(t, router, "http://blog.example.com/login")
+		form := url.Values{"alias": {"tester"}, "pass": {"testpassword"}}
+		if tc.token {
+			form.Set("gorilla.csrf.Token", token)
+		}
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://blog.example.com/auth/login", strings.NewReader(form.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Origin", "null")
+		if tc.fetchSite != "" {
+			req.Header.Set("Sec-Fetch-Site", tc.fetchSite)
+		}
+		req.AddCookie(csrfCookie)
+		rec := serveCSRFTest(router, req)
+
+		if rec.Code != tc.want {
+			t.Errorf("POST /auth/login with Origin null, Sec-Fetch-Site %q, token %t: %d %s, want %d",
+				tc.fetchSite, tc.token, rec.Code, rec.Body, tc.want)
+		}
+	}
+}
+
+func TestCSRFConfiguredHostAsBrowsersSendIt(t *testing.T) { //nolint:paralleltest // newTemplateTestApp loads the package-level templates
+	// Browsers send an origin's host lowercased and without the scheme's
+	// default port, however the [app] host writes it, and a proxy in front
+	// may pass requests on with its own Host.
+	for _, host := range []string{"https://Blog.Example.com", "https://blog.example.com:443", "http://BLOG.example.com:80"} { //nolint:paralleltest // each case counts the posts it creates
+		t.Run(host, func(t *testing.T) {
+			app, router, _, session := newCSRFTestApp(t, host)
+			origin := "https://blog.example.com"
+			if strings.HasPrefix(host, "http://") {
+				origin = "http://blog.example.com"
+			}
+
+			for _, h := range []struct{ origin, referer string }{
+				{origin, origin + "/"},
+				{"", origin + "/"},
+			} {
+				before := csrfTestPostCount(t, app)
+				token, csrfCookie := fetchCSRFToken(t, router, "http://127.0.0.1:8080/new", session)
+
+				req := newCSRFTestPost(t, "http://127.0.0.1:8080/api/collections/tester/posts")
+				if h.origin != "" {
+					req.Header.Set("Origin", h.origin)
+				}
+				req.Header.Set("Referer", h.referer)
+				req.Header.Set("X-CSRF-Token", token)
+				req.AddCookie(session)
+				req.AddCookie(csrfCookie)
+				rec := serveCSRFTest(router, req)
+
+				if rec.Code != http.StatusCreated {
+					t.Errorf("[app] host %s, Host 127.0.0.1:8080, Origin %q, Referer %q, with a token: %d %s, want 201",
+						host, h.origin, h.referer, rec.Code, rec.Body)
+				}
+				if after := csrfTestPostCount(t, app); after != before+1 {
+					t.Errorf("posts went from %d to %d, want one more", before, after)
+				}
+			}
+		})
+	}
+}
+
 func TestCSRFRefusalSaysReload(t *testing.T) { //nolint:paralleltest // newTemplateTestApp loads the package-level templates
 	_, router, _, session := newCSRFTestApp(t, "http://localhost:8080")
 	// A tab rendered before its token changed sends a well-formed token
@@ -478,7 +622,21 @@ var (
 	postMethodRe = regexp.MustCompile(`(?i)\bmethod\s*=\s*["']?post\b`)
 	xhrOpenRe    = regexp.MustCompile(`\.open\(\s*["'](?:POST|PUT|PATCH|DELETE)["']`)
 	headTagRe    = regexp.MustCompile(`(?i)<head\b`)
+	status403Re  = regexp.MustCompile(`\.status\s*===?\s*403\b`)
 )
+
+// until returns s up to the first end in it, ignoring case, or all of s.
+func until(s, end string) string {
+	if i := strings.Index(strings.ToLower(s), end); i >= 0 {
+		return s[:i]
+	}
+	return s
+}
+
+// srcLine returns the line of src that byte i is on.
+func srcLine(src string, i int) int {
+	return strings.Count(src[:i], "\n") + 1
+}
 
 // csrfTokenProblems lists, by line, the places in src that would send a
 // write without a CSRF token: forms that post without {{.CSRFField}},
@@ -487,13 +645,7 @@ var (
 // read.
 func csrfTokenProblems(path, src string) []string {
 	var problems []string
-	line := func(i int) int { return strings.Count(src[:i], "\n") + 1 }
-	until := func(s, end string) string {
-		if i := strings.Index(strings.ToLower(s), end); i >= 0 {
-			return s[:i]
-		}
-		return s
-	}
+	line := func(i int) int { return srcLine(src, i) }
 
 	for _, loc := range formTagRe.FindAllStringIndex(src, -1) {
 		if postMethodRe.MatchString(src[loc[0]:loc[1]]) && !strings.Contains(until(src[loc[1]:], "</form>"), "CSRFField") {
@@ -514,8 +666,28 @@ func csrfTokenProblems(path, src string) []string {
 	return problems
 }
 
-func TestTemplatesSendToken(t *testing.T) {
-	t.Parallel()
+// refusalProblems lists, by line, the requests in src that answer a
+// failed write with an alert of their own and don't show, for a 403, the
+// error_msg the server sent, which may say to reload the page.
+func refusalProblems(path, src string) []string {
+	var problems []string
+	for _, loc := range xhrOpenRe.FindAllStringIndex(src, -1) {
+		handler := until(src[loc[1]:], ".send(")
+		if !strings.Contains(handler, "alert(") {
+			continue
+		}
+		at := status403Re.FindStringIndex(handler)
+		if len(at) == 0 || !strings.Contains(until(handler[at[1]:], "alert("), "error_msg") {
+			problems = append(problems, fmt.Sprintf("%s:%d: a refused request's alert leaves out the server's error_msg", path, srcLine(src, loc[0])))
+		}
+	}
+	return problems
+}
+
+// scriptProblems runs check on every template, page and script that
+// sends requests, and returns what it lists.
+func scriptProblems(t *testing.T, check func(path, src string) []string) []string {
+	t.Helper()
 	var problems []string
 	root := os.DirFS(".")
 	for _, dir := range []string{templatesDir, pagesDir, "static/js"} {
@@ -527,15 +699,73 @@ func TestTemplatesSendToken(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			problems = append(problems, csrfTokenProblems(path, string(src))...)
+			problems = append(problems, check(path, string(src))...)
 			return nil
 		})
 		if err != nil {
 			t.Fatalf("walk %s: %v", dir, err)
 		}
 	}
-	if len(problems) > 0 {
+	return problems
+}
+
+func TestTemplatesSendToken(t *testing.T) {
+	t.Parallel()
+	if problems := scriptProblems(t, csrfTokenProblems); len(problems) > 0 {
 		t.Errorf("%d places send a write without a CSRF token:\n%s", len(problems), strings.Join(problems, "\n"))
+	}
+}
+
+func TestTemplatesShowRefusal(t *testing.T) {
+	t.Parallel()
+	if problems := scriptProblems(t, refusalProblems); len(problems) > 0 {
+		t.Errorf("%d requests hide the server's message when it refuses them:\n%s", len(problems), strings.Join(problems, "\n"))
+	}
+}
+
+func TestRefusalProblemsFindsEach(t *testing.T) {
+	t.Parallel()
+	src := `<script>
+http.open("POST", url, true);
+http.onreadystatechange = function() {
+	if (http.status == 200) {
+		done();
+	} else {
+		alert("Failed to post.");
+	}
+}
+http.send(params);
+http.open("DELETE", url, true);
+http.onreadystatechange = function() {
+	if (http.status == 403) {
+		alert("Refused.");
+	} else {
+		alert("Failed to delete: " + JSON.parse(http.responseText).error_msg);
+	}
+}
+http.send();
+http.open("POST", url, true);
+http.onreadystatechange = function() {
+	var msg = "Failed to pin.";
+	if (http.status === 403) {
+		msg = JSON.parse(http.responseText).error_msg;
+	}
+	alert(msg);
+}
+http.send(params);
+http.open("POST", url, true);
+http.onreadystatechange = function() {
+	console.error("no alert");
+}
+http.send(params);
+</script>`
+	want := []string{
+		"t.tmpl:2: a refused request's alert leaves out the server's error_msg",
+		"t.tmpl:11: a refused request's alert leaves out the server's error_msg",
+	}
+	got := refusalProblems("t.tmpl", src)
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		t.Errorf("refusalProblems:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 }
 

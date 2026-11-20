@@ -70,7 +70,13 @@ func csrfMiddleware(apper Apper) mux.MiddlewareFunc {
 	if u, err := url.Parse(host); err == nil && u.Host != "" {
 		// Behind a proxy that terminates TLS, the Host a request arrives
 		// with may not be the one the visitor's browser sent it to.
-		trusted = append(trusted, u.Host)
+		// Browsers send the origin's host lowercased and without the
+		// scheme's default port.
+		h := strings.ToLower(u.Host)
+		if p := u.Port(); u.Scheme == "https" && p == "443" || u.Scheme == "http" && p == "80" {
+			h = strings.TrimSuffix(h, ":"+p)
+		}
+		trusted = append(trusted, h)
 	}
 	protect := csrf.Protect(app.keys.CSRFKey,
 		csrf.Path("/"),
@@ -90,12 +96,39 @@ func csrfMiddleware(apper Apper) mux.MiddlewareFunc {
 			if !secure {
 				r = csrf.PlaintextHTTPRequest(r)
 			}
+			r = csrfUnstatedOrigin(r, secure)
 			if csrfExempt(r) {
 				r = csrf.UnsafeSkipCheck(r)
 			}
 			protected.ServeHTTP(w, r)
 		})
 	}
+}
+
+// csrfUnstatedOrigin returns r ready for the CSRF check when its browser
+// didn't say which origin sent it. Under "Referrer-Policy: no-referrer",
+// browsers send writes with "Origin: null", or with no Origin, and with no
+// Referer, even to the page's own site. gorilla/csrf refuses a null Origin,
+// and over https it refuses a write with neither header. Sec-Fetch-Site
+// still says where such a write came from, so when it says the same
+// origin, the CSRF token decides. Browsers send Sec-Fetch-Site only over
+// https and to localhost, so over plain http a null Origin counts as none
+// unless Sec-Fetch-Site says the write came from somewhere else.
+func csrfUnstatedOrigin(r *http.Request, secure bool) *http.Request {
+	origin := r.Header.Get("Origin")
+	if origin != "" && origin != "null" {
+		return r
+	}
+	switch site := r.Header.Get("Sec-Fetch-Site"); {
+	case site == "same-origin":
+		// Over https, gorilla/csrf asks a write with no Origin for a
+		// Referer from this site, which the browser didn't send.
+		r = csrf.PlaintextHTTPRequest(r)
+	case site != "" || secure:
+		return r
+	}
+	r.Header.Del("Origin")
+	return r
 }
 
 // csrfExempt reports whether r may change state without a CSRF token.

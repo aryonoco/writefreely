@@ -188,7 +188,14 @@ var deletePost = function(postID, token, callback) {
 				// Have it remove the post locally only.
 			} else {
 				$delBtn.innerHTML = 'delete';
-				alert("Failed to delete." + (http.status>=500?" Please try again.":""));
+				var msg = "Failed to delete." + (http.status>=500?" Please try again.":"");
+				if (http.status == 403) {
+					// The server says what to do, such as reload the page.
+					try {
+						msg = JSON.parse(http.responseText).error_msg || msg;
+					} catch (e) {}
+				}
+				alert(msg);
 			}
 		}
 	}
@@ -240,7 +247,14 @@ function pinPost(e, postID, slug, title) {
 				// Have it remove the post locally only.
 			} else {
 				$pinBtn.innerHTML = 'pin';
-				alert("Failed to pin." + (http.status>=500?" Please try again.":""));
+				var msg = "Failed to pin." + (http.status>=500?" Please try again.":"");
+				if (http.status == 403) {
+					// The server says what to do, such as reload the page.
+					try {
+						msg = JSON.parse(http.responseText).error_msg || msg;
+					} catch (e) {}
+				}
+				alert(msg);
 			}
 		}
 	}

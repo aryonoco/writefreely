@@ -124,7 +124,14 @@ function unpinPost(e, postID) {
 				$pinBtn.innerHTML = 'Unpin';
 			} else {
 				$pinBtn.innerHTML = 'Unpin';
-				alert("Failed to unpin." + (http.status>=500?" Please try again.":""));
+				var msg = "Failed to unpin." + (http.status>=500?" Please try again.":"");
+				if (http.status == 403) {
+					// The server says what to do, such as reload the page.
+					try {
+						msg = JSON.parse(http.responseText).error_msg || msg;
+					} catch (e) {}
+				}
+				alert(msg);
 			}
 		}
 	}
