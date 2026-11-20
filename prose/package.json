@@ -6,7 +6,7 @@
   "dependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.24.1",
-    "markdown-it": "^12.0.4",
+    "markdown-it": "^14.3.3",
     "prosemirror-example-setup": "github:writefreely/prosemirror-example-setup",
     "prosemirror-keymap": "^1.1.4",
     "prosemirror-markdown": "github:writefreely/prosemirror-markdown",
