@@ -13,6 +13,7 @@
 		<link rel="shortcut icon" href="/favicon.ico" />
 		<link rel="canonical" href="{{.Host}}/{{if .SingleUser}}d/{{end}}{{.ID}}" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="csrf-token" content="{{.CSRFToken}}">
 
 		<meta name="generator" content="{{.SiteName}}">
 		<meta name="title" content="{{if .Title}}{{.Title}}{{else}}{{.GenTitle}}{{end}}">

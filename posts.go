@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/gosimple/slug"
 	"github.com/guregu/null"
@@ -1660,7 +1661,7 @@ Are you sure it was ever here?` + shortCodeNoSig,
 			if u != nil && u.IsEmailSubscriber(app, c.ID) {
 				p.Content = strings.Replace(p.Content, shortCodeEmailSub, `<p id="emailsub">You're subscribed to email updates. <a href="/api/collections/`+c.Alias+`/email/unsubscribe?slug=`+p.Slug.String+`">Unsubscribe</a>.</p>`, -1)
 			} else {
-				p.Content = alterShortCodeEmailSubForm(p.Content, c.Alias, p.Slug.String, false)
+				p.Content = alterShortCodeEmailSubForm(p.Content, c.Alias, p.Slug.String, false, csrf.TemplateField(r))
 			}
 		}
 		p.Content = strings.Replace(p.Content, "&lt;!--emailsub-->", "<!--emailsub-->", 1)

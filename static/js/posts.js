@@ -282,6 +282,7 @@ var deletePost = function(postID, token, callback) {
 	var http = new XMLHttpRequest();
 	var url = "/api/posts/" + postID + (typeof token !== 'undefined' ? "?token=" + encodeURIComponent(token) : '');
 	http.open("DELETE", url, true);
+	http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {
 			deleting = false;

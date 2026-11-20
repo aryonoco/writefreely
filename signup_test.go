@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/writeas/impart"
 	"github.com/writefreely/writefreely/config"
@@ -66,7 +65,7 @@ func newSignupTestApp(t *testing.T) *App {
 		cfg:  cfg,
 		keys: keys,
 	}
-	app.formDecoder = schema.NewDecoder()
+	app.InitDecoder()
 	app.InitSession()
 
 	if err := adminInitDatabase(app); err != nil {

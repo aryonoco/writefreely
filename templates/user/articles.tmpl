@@ -122,6 +122,7 @@ function postsLoaded(n) {
 		this.innerText = 'Syncing '+(plural?'them':'it')+' now...';
 
 		http.open("POST", "/api/posts/claim", true);
+		http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 
 		// Send the proper header information along with the request
 		http.setRequestHeader("Content-type", "application/json");

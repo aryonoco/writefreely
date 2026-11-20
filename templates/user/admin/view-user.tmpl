@@ -78,6 +78,7 @@ input.copy-text {
 			<form action="/admin/user/{{.User.Username}}/status" method="POST" {{if not .User.IsSilenced}}onsubmit="return confirmSilence()"{{end}}>
 				<th><a id="status"></a>Status</th>
 				<td class="active-silence">
+					{{ .CSRFField }}
 				{{if .User.IsSilenced}}
 					<p>Silenced</p>
 					<input type="submit" value="Unsilence"/>
@@ -93,6 +94,7 @@ input.copy-text {
 			<td>
 				{{if ne .Username .User.Username}}
 				<form id="reset-form" action="/admin/user/{{.User.Username}}/passphrase" method="post" autocomplete="false">
+					{{ .CSRFField }}
 					<input type="hidden" name="user" value="{{.User.ID}}"/>
 					<button type="submit">Reset</button>
 				</form>
@@ -168,6 +170,7 @@ input.copy-text {
 		<ul id="delete-errors" class="errors"></ul>
 
 		<form action="/admin/user/{{.User.Username}}/delete" method="post" onsubmit="confirmDeletion()">
+			{{ .CSRFField }}
 			<input id="confirm-text" placeholder="{{.User.Username}}" type="text" class="confirm boxy" name="confirm-username" style="margin-top: 0.5em;" />
 			<div style="text-align:right; margin-top: 1em;">
 				<a id="cancel-delete" style="margin-right:2em" href="#">Cancel</a>
