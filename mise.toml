@@ -6,6 +6,8 @@
 "aqua:golangci/golangci-lint" = "2.15.0"
 "aqua:rhysd/actionlint" = "1.7.12"
 "aqua:koalaman/shellcheck" = "0.11.0"
+# The Node the divbast image builds the editor with
+"core:node" = "26.13.1"
 
 [env]
 # The toolchain is the one pinned above, never one go.mod's toolchain line
