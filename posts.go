@@ -13,6 +13,7 @@ package writefreely
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -721,8 +722,10 @@ func existingPost(app *App, w http.ResponseWriter, r *http.Request) error {
 
 	if reqJSON {
 		// Decode JSON request
-		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&p)
+		err = decodeJSONBody(w, r, requestBodyLimit, &p)
+		if errors.Is(err, ErrBodyTooLarge) {
+			return err
+		}
 		if err != nil {
 			log.Error("Couldn't parse post update JSON request: %v\n", err)
 			return ErrBadJSON
