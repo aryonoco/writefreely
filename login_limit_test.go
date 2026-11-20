@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -343,6 +344,9 @@ func TestClientAddrWarnsOnce(t *testing.T) {
 			if len(warnings) != 1 {
 				t.Fatalf("got %d warning lines, want 1:\n%s", len(warnings), out.String())
 			}
+			if got := strings.Contains(warnings[0], "(or unix)"); got != (tc.wantPeer == testSocketPath) {
+				t.Errorf("warning says to list unix = %v for peer %s: %s", got, tc.wantPeer, warnings[0])
+			}
 			if !strings.Contains(warnings[0], "[server] trusted_proxies") || !strings.Contains(warnings[0], tc.wantPeer) {
 				t.Errorf("warning doesn't name [server] trusted_proxies and the peer %s: %s", tc.wantPeer, warnings[0])
 			}
@@ -529,5 +533,98 @@ func TestOwnerNotLockedOutByOthers(t *testing.T) {
 	rec := apiLogin(t, router, "203.0.113.20:1000", "owner", "the-right-password")
 	if rec.Code != http.StatusOK {
 		t.Fatalf("owner from B: %d %s, want 200", rec.Code, rec.Body)
+	}
+}
+
+// limitLines returns the logged lines that report an address reaching the
+// login limit.
+func limitLines(out fmt.Stringer) []string {
+	var lines []string
+	for line := range strings.SplitSeq(out.String(), "\n") {
+		if strings.Contains(line, "attempt limit reached") {
+			lines = append(lines, line)
+		}
+	}
+	return lines
+}
+
+//nolint:paralleltest // swaps web-core's package-level loggers
+func TestLoginLimitLoggedOncePerWindow(t *testing.T) {
+	app := newSignupTestApp(t)
+	createLoginTestUser(t, app, "owner", "the-right-password")
+	router := InitRoutes(app, mux.NewRouter())
+	out := captureLog(t)
+
+	for range 30 {
+		apiLogin(t, router, "198.51.100.1:1000", "owner", "a-wrong-password")
+	}
+	apiLogin(t, router, "203.0.113.20:1000", "someone-else", "a-wrong-password")
+
+	lines := limitLines(out)
+	if len(lines) != 1 {
+		t.Fatalf("got %d limit lines, want 1:\n%s", len(lines), out.String())
+	}
+	if !strings.Contains(lines[0], "198.51.100.1") || !strings.Contains(lines[0], "15m0s") {
+		t.Errorf("line doesn't name the address and the window: %s", lines[0])
+	}
+	if strings.Contains(out.String(), "owner") || strings.Contains(out.String(), "someone-else") {
+		t.Errorf("log names a typed username:\n%s", out.String())
+	}
+}
+
+//nolint:paralleltest // swaps web-core's package-level loggers
+func TestLoginLimitLogNamesTrustedProxies(t *testing.T) {
+	const hint = "[server] trusted_proxies"
+	for _, tc := range []struct {
+		list     string
+		wantHint bool
+	}{{"", true}, {"10.0.0.2", false}} {
+		t.Run("list "+tc.list, func(t *testing.T) {
+			app := newSignupTestApp(t)
+			pl, err := parseTrustedProxies(tc.list)
+			if err != nil {
+				t.Fatal(err)
+			}
+			app.trustedProxies = pl
+			router := InitRoutes(app, mux.NewRouter())
+			out := captureLog(t)
+
+			for range 12 {
+				apiLogin(t, router, "198.51.100.1:1000", "nobody", "a-wrong-password")
+			}
+
+			lines := limitLines(out)
+			if len(lines) != 1 {
+				t.Fatalf("got %d limit lines, want 1:\n%s", len(lines), out.String())
+			}
+			if got := strings.Contains(lines[0], hint); got != tc.wantHint {
+				t.Errorf("trusted_proxies %q: line names %s = %v, want %v: %s", tc.list, hint, got, tc.wantHint, lines[0])
+			}
+			if tc.wantHint && !strings.Contains(lines[0], "reverse proxy") {
+				t.Errorf("line doesn't mention the reverse proxy: %s", lines[0])
+			}
+		})
+	}
+}
+
+func TestLimiterReportsFirstRefusalPerWindow(t *testing.T) {
+	t.Parallel()
+	l := newLoginLimiter(loginFailureLimit, loginFailureWindow, loginLimiterCapacity)
+	now := time.Now()
+	for range 10 {
+		l.attempt("198.51.100.1", now)
+	}
+	if ok, first := l.attempt("198.51.100.1", now); ok || !first {
+		t.Errorf("first refusal = (%v, %v), want (false, true)", ok, first)
+	}
+	if ok, first := l.attempt("198.51.100.1", now); ok || first {
+		t.Errorf("second refusal = (%v, %v), want (false, false)", ok, first)
+	}
+	later := now.Add(loginFailureWindow)
+	for range 10 {
+		l.attempt("198.51.100.1", later)
+	}
+	if ok, first := l.attempt("198.51.100.1", later); ok || !first {
+		t.Errorf("first refusal in the next window = (%v, %v), want (false, true)", ok, first)
 	}
 }
