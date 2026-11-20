@@ -34,6 +34,7 @@ select {
 	{{if not .ConfigWritable}}<p class="error" style="text-align: center">config.ini can't be written, so these settings are read-only. The file is probably mounted read-only or owned by another user.</p>{{end}}
 
 	<form action="/admin/update/config" method="post">
+		{{ .CSRFField }}
 	<fieldset{{if not .ConfigWritable}} disabled{{end}} style="border: 0; margin: 0; padding: 0; min-width: 0;">
 		<div class="features row">
 			<div{{if .Config.SingleUser}} class="invisible"{{end}}>

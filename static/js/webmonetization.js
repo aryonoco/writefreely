@@ -79,6 +79,7 @@ function initMonetization() {
 
         let http = new XMLHttpRequest();
         http.open("POST", "/api/collections/" + window.collAlias + "/posts/" + window.postSlug + "/splitcontent", true);
+        http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 
         // Send the proper header information along with the request
         http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

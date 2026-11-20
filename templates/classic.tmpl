@@ -8,6 +8,7 @@
 		<link rel="stylesheet" type="text/css" href="/css/prose.css" />
 		{{if .CustomCSS}}<link rel="stylesheet" type="text/css" href="/local/custom.css" />{{end}}
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="csrf-token" content="{{.CSRFToken}}">
 
 		<meta name="google" value="notranslate">
 	</head>
@@ -198,6 +199,7 @@
 			{{ end }}
 
 			http.open("POST", url, true);
+			http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 
 			// Send the proper header information along with the request
 			http.setRequestHeader("Content-type", "application/json");

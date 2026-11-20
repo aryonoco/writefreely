@@ -13,6 +13,7 @@
 		{{if lt .CurrentPage .TotalPages}}<link rel="next" href="{{.NextPageURL .Prefix .NavSuffix .CurrentPage .IsTopLevel}}">{{end}}
 		{{if not .IsPrivate}}<link rel="alternate" type="application/rss+xml" title="{{.DisplayTitle}} &raquo; Feed" href="{{.CanonicalURL}}feed/" />{{end}}
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="csrf-token" content="{{.CSRFToken}}">
 
 		<meta name="generator" content="WriteFreely">
 		<meta name="description" content="{{.Description}}">
@@ -148,6 +149,7 @@ var deletePost = function(postID, token, callback) {
 	var http = new XMLHttpRequest();
 	var url = "/api/posts/" + postID;
 	http.open("DELETE", url, true);
+	http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {
 			deleting = false;
@@ -198,6 +200,7 @@ function pinPost(e, postID, slug, title) {
 	var url = "/api/collections/{{.Alias}}/pin";
 	var params = [ { "id": postID } ];
 	http.open("POST", url, true);
+	http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 	http.setRequestHeader("Content-type", "application/json");
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {

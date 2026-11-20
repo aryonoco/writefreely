@@ -84,6 +84,7 @@ form dd {
 
 		<div id="billing">
 			<form action="/auth/signup" method="POST" id="signup-form" onsubmit="return signup()">
+				{{ .CSRFField }}
 				<dl class="billing">
 					<label>
 						<dt>Username</dt>
@@ -167,6 +168,7 @@ var doneTyping = function() {
 		};
 		var http = new XMLHttpRequest();
 		http.open("POST", '/api/alias', true);
+		http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 
 		// Send the proper header information along with the request
 		http.setRequestHeader("Content-type", "application/json");

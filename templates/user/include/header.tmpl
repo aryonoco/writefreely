@@ -87,6 +87,7 @@
 	{{if .CustomCSS}}<link rel="stylesheet" type="text/css" href="/local/custom.css" />{{end}}
 	<link rel="shortcut icon" href="/favicon.ico" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="csrf-token" content="{{.CSRFToken}}">
 	<meta name="theme-color" content="#888888" />
 	<meta name="apple-mobile-web-app-title" content="{{.SiteName}}">
 	<link rel="apple-touch-icon" sizes="152x152" href="/img/touch-icon-152.png">

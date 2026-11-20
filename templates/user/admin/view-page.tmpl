@@ -42,6 +42,7 @@ input[type=text] {
 	{{if .Message}}<p>{{.Message}}</p>{{end}}
 
 	<form method="post" action="/admin/update/{{.Content.ID}}" onsubmit="savePage(this)">
+		{{ .CSRFField }}
 		{{if .Banner}}
 		<label for="banner">
 			Banner

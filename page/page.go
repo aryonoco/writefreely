@@ -12,6 +12,7 @@
 package page
 
 import (
+	"html/template"
 	"strings"
 
 	"github.com/writefreely/writefreely/config"
@@ -33,6 +34,11 @@ type StaticPage struct {
 	IsAdmin         bool
 	CanInvite       bool
 	UpdateAvailable bool
+
+	// CSRFField is the hidden input that carries the request's CSRF token
+	// in a form, and CSRFToken is the token itself, for scripts to send.
+	CSRFField template.HTML
+	CSRFToken string
 }
 
 // SanitizeHost alters the StaticPage to contain a real hostname. This is

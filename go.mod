@@ -49,7 +49,10 @@ require (
 	golang.org/x/net v0.62.0
 )
 
-require github.com/xhit/go-simple-mail/v2 v2.17.0
+require (
+	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/xhit/go-simple-mail/v2 v2.17.0
+)
 
 require (
 	code.as/core/socks v1.0.0 // indirect
@@ -61,7 +64,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect

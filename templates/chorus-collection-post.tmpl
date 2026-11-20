@@ -9,6 +9,7 @@
 		{{if .CustomCSS}}<link rel="stylesheet" type="text/css" href="/local/custom.css" />{{end}}
 		<link rel="shortcut icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="csrf-token" content="{{.CSRFToken}}">
 		<link rel="canonical" href="{{.CanonicalURL .Host}}" />
 		<meta name="generator" content="WriteFreely">
 		<meta name="title" content="{{.PlainDisplayTitle}} {{localhtml "title dash" .Language.String}} {{if .Collection.Title}}{{.Collection.Title}}{{else}}{{.Collection.Alias}}{{end}}">
@@ -110,6 +111,7 @@ function unpinPost(e, postID) {
 	var url = "/api/collections/{{.Collection.Alias}}/unpin";
 	var params = [ { "id": postID } ];
 	http.open("POST", url, true);
+	http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 	http.setRequestHeader("Content-type", "application/json");
 	http.onreadystatechange = function() {
 		if (http.readyState == 4) {

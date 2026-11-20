@@ -31,6 +31,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
@@ -373,9 +374,11 @@ func handleTemplatedPage(app *App, w http.ResponseWriter, r *http.Request, t *te
 
 func pageForReq(app *App, r *http.Request) page.StaticPage {
 	p := page.StaticPage{
-		AppCfg:  app.cfg.App,
-		Path:    r.URL.Path,
-		Version: "v" + softwareVer,
+		AppCfg:    app.cfg.App,
+		Path:      r.URL.Path,
+		Version:   "v" + softwareVer,
+		CSRFField: csrf.TemplateField(r),
+		CSRFToken: csrf.Token(r),
 	}
 
 	// Use custom style, if file exists

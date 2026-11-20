@@ -279,6 +279,7 @@ var He = {
 		var http = new XMLHttpRequest();
 
 		http.open("POST", url, true);
+		http.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').content);
 
 		// Send the proper header information along with the request
 		http.setRequestHeader("Content-type", "application/json");

@@ -450,9 +450,11 @@ func apiLogin(t *testing.T, h http.Handler, remoteAddr, alias, pass string) *htt
 // response with the flash messages it left in the session.
 func webLoginFlashes(t *testing.T, app *App, h http.Handler, remoteAddr, alias, pass string) (rec *httptest.ResponseRecorder, flashes []any) {
 	t.Helper()
-	form := url.Values{"alias": {alias}, "pass": {pass}}
+	token, csrfCookie := fetchCSRFToken(t, h, "/login")
+	form := url.Values{"alias": {alias}, "pass": {pass}, "gorilla.csrf.Token": {token}}
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/auth/login", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.AddCookie(csrfCookie)
 	req.RemoteAddr = remoteAddr
 	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
