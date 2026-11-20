@@ -32,7 +32,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/onsi/gomega v1.13.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/writeas/activity v0.1.2
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
@@ -62,7 +62,6 @@ require (
 	github.com/captncraig/cors v0.0.0-20190703115713-e80254a89df1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
@@ -73,7 +72,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
@@ -83,9 +81,9 @@ require (
 	github.com/writeas/openssl-go v1.0.0 // indirect
 	github.com/writeas/slug v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 go 1.26.0
