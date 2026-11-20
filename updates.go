@@ -11,6 +11,7 @@
 package writefreely
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -43,9 +44,14 @@ func (uc *updatesCache) CheckNow() error {
 		log.Info("[update check] Checking for update now.")
 	}
 	uc.mu.Lock()
-	defer uc.mu.Unlock()
 	uc.lastCheck = time.Now()
+	uc.mu.Unlock()
+
+	// Fetch without holding the lock, so readers never wait on the network
 	latestRemote, err := newVersionCheck()
+
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
 	if err != nil {
 		log.Error("[update check] Failed: %v", err)
 		uc.checkError = err
@@ -59,32 +65,60 @@ func (uc *updatesCache) CheckNow() error {
 
 // AreAvailable updates the cache if the frequency duration has passed
 // then returns if the latest release is newer than the current running version.
-func (uc updatesCache) AreAvailable() bool {
-	if time.Since(uc.lastCheck) > uc.frequency {
+func (uc *updatesCache) AreAvailable() bool {
+	uc.mu.Lock()
+	stale := time.Since(uc.lastCheck) > uc.frequency
+	uc.mu.Unlock()
+	if stale {
 		uc.CheckNow()
 	}
-	return CompareSemver(uc.latestVersion, uc.currentVersion) == 1
+	return uc.AreAvailableNoCheck()
 }
 
 // AreAvailableNoCheck returns if the latest release is newer than the current
 // running version.
-func (uc updatesCache) AreAvailableNoCheck() bool {
+func (uc *updatesCache) AreAvailableNoCheck() bool {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
 	return CompareSemver(uc.latestVersion, uc.currentVersion) == 1
 }
 
 // LatestVersion returns the latest stored version available.
-func (uc updatesCache) LatestVersion() string {
+func (uc *updatesCache) LatestVersion() string {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
 	return uc.latestVersion
 }
 
-func (uc updatesCache) ReleaseURL() string {
-	return "https://writefreely.org/releases/" + uc.latestVersion
+// CurrentVersion returns the version of the running software.
+func (uc *updatesCache) CurrentVersion() string {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+	return uc.currentVersion
+}
+
+// LastCheck returns the time of the most recent update check.
+func (uc *updatesCache) LastCheck() time.Time {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+	return uc.lastCheck
+}
+
+// CheckError returns the error from the most recent failed check, if any.
+func (uc *updatesCache) CheckError() error {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
+	return uc.checkError
+}
+
+func (uc *updatesCache) ReleaseURL() string {
+	return "https://writefreely.org/releases/" + uc.LatestVersion()
 }
 
 // ReleaseNotesURL returns the full URL to the blog.writefreely.org release notes
 // for the latest version as stored in the cache.
-func (uc updatesCache) ReleaseNotesURL() string {
-	return wfReleaseNotesURL(uc.latestVersion)
+func (uc *updatesCache) ReleaseNotesURL() string {
+	return wfReleaseNotesURL(uc.LatestVersion())
 }
 
 func wfReleaseNotesURL(v string) string {
@@ -113,10 +147,17 @@ func (app *App) InitUpdates() {
 	}
 }
 
+// versionURL is where the latest released version is fetched from.
+var versionURL = "https://version.writefreely.org"
+
 func newVersionCheck() (string, error) {
-	res, err := http.Get("https://version.writefreely.org")
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, versionURL, http.NoBody)
+	if err != nil {
+		return "", err
+	}
+	res, err := http.DefaultClient.Do(req)
 	if debugging {
-		log.Info("[update check] GET https://version.writefreely.org")
+		log.Info("[update check] GET %s", versionURL)
 	}
 	// TODO: return error if statusCode != OK
 	if err == nil && res.StatusCode == http.StatusOK {

@@ -675,13 +675,14 @@ func handleViewAdminUpdates(app *App, u *User, w http.ResponseWriter, r *http.Re
 	}
 	p.CurReleaseNotesURL = wfReleaseNotesURL(p.Version)
 	if app.cfg.App.UpdateChecks {
-		p.LastChecked = app.updates.lastCheck.Format("January 2, 2006, 3:04 PM")
-		p.LastChecked8601 = app.updates.lastCheck.Format("2006-01-02T15:04:05Z")
+		lastCheck := app.updates.LastCheck()
+		p.LastChecked = lastCheck.Format("January 2, 2006, 3:04 PM")
+		p.LastChecked8601 = lastCheck.Format("2006-01-02T15:04:05Z")
 		p.LatestVersion = app.updates.LatestVersion()
 		p.LatestReleaseURL = app.updates.ReleaseURL()
 		p.LatestReleaseNotesURL = app.updates.ReleaseNotesURL()
 		p.UpdateAvailable = app.updates.AreAvailable()
-		p.CheckFailed = app.updates.checkError != nil
+		p.CheckFailed = app.updates.CheckError() != nil
 	}
 
 	showUserPage(w, "app-updates", p)
