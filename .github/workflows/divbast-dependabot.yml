@@ -1,0 +1,47 @@
+# Turns on auto-merge for Dependabot's pull requests, so each one merges
+# once divbast's ruleset is satisfied, divbast-ci's test check among it. A
+# pull request that changes a file under .github/workflows/ is left for a
+# maintainer to merge by hand, with a notice saying so: changing a workflow
+# needs the workflows permission, which GITHUB_TOKEN never has. Go module
+# and Dockerfile bumps merge by themselves; GitHub Actions bumps, which
+# edit workflows, don't.
+name: divbast-dependabot
+
+on: pull_request
+
+permissions: {}
+
+# A newer push to the pull request supersedes the run before it
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# bash with -e and pipefail, so a command that fails fails its step, in a
+# pipeline too. A step that names no shell otherwise runs bash -e alone.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  auto-merge:
+    name: auto-merge
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions:
+      contents: write # the merge itself
+      pull-requests: write # list the changed files and turn on auto-merge
+    steps:
+      - name: Merge once the required checks pass, unless a workflow changes
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # A file list that can't be read fails the step, rather than
+          # merging what it couldn't check
+          files=$(gh pr diff --name-only "${PR_URL}")
+          if grep -q '^\.github/workflows/' <<<"${files}"; then
+            echo "::notice::This pull request changes a workflow under .github/workflows/, which needs the workflows permission GITHUB_TOKEN never has, so a maintainer merges it by hand."
+            exit 0
+          fi
+          gh pr merge --auto --merge "${PR_URL}"

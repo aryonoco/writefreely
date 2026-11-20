@@ -1,0 +1,22 @@
+# actionlint's configuration for this repository's workflows, which it reads
+# from here on its own.
+
+# actionlint 1.7.12's built-in runner list predates ubuntu-26.04, which is a
+# GitHub-hosted runner, not a self-hosted one.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      # GitHub documents concurrency's queue key, whose max lets pending runs
+      # wait their turn instead of replacing one another, but actionlint
+      # 1.7.12 does not know it yet (rhysd/actionlint#657). Only that key, so
+      # any other unknown key under concurrency still fails.
+      - '^unexpected key "queue" for "concurrency" section\. '
+  # Upstream's image workflow is switched off with if: false on its job, a
+  # constant actionlint would have removed. Only there, and only false.
+  .github/workflows/docker-publish.yml:
+    ignore:
+      - '^constant expression "false" in condition\. '
