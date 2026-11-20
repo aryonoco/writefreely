@@ -63,6 +63,13 @@ const (
 	// shutdownDrain bounds how long a stop signal waits for in-flight
 	// requests before the server closes the database and exits.
 	shutdownDrain = 8 * time.Second
+
+	// serverReadHeaderTimeout bounds how long a client may take to send
+	// a request's headers.
+	serverReadHeaderTimeout = 10 * time.Second
+	// serverIdleTimeout bounds how long a kept-alive connection may wait
+	// for its next request.
+	serverIdleTimeout = 120 * time.Second
 )
 
 var (
@@ -513,7 +520,7 @@ func Serve(app *App, r *mux.Router) {
 	)
 	// newServer returns a server the signal handler will drain.
 	newServer := func(addr string, h http.Handler) *http.Server {
-		s := &http.Server{Addr: addr, Handler: h} //nolint:gosec // G112: matches the previous http.Serve behavior, which sets no header timeout
+		s := newHTTPServer(addr, h)
 		srvMu.Lock()
 		defer srvMu.Unlock()
 		servers = append(servers, s)
@@ -654,6 +661,20 @@ requests. We recommend supplying a valid host name.`)
 	if err != nil {
 		log.Error("Unable to start: %v", err)
 		os.Exit(1)
+	}
+}
+
+// newHTTPServer returns a server for h on addr. It bounds how long a client
+// may take to send a request's headers, and how long a kept-alive
+// connection may sit idle between requests. It sets no ReadTimeout or
+// WriteTimeout, which would cut off a long upload, like an import, or a
+// long response, like an export, on a slow connection.
+func newHTTPServer(addr string, h http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              addr,
+		Handler:           h,
+		ReadHeaderTimeout: serverReadHeaderTimeout,
+		IdleTimeout:       serverIdleTimeout,
 	}
 }
 

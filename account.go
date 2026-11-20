@@ -99,8 +99,10 @@ func signup(app *App, w http.ResponseWriter, r *http.Request) (*AuthUser, error)
 	// Get params
 	var ur userRegistration
 	if reqJSON {
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&ur)
+		err := decodeJSONBody(w, r, formBodyLimit, &ur)
+		if errors.Is(err, ErrBodyTooLarge) {
+			return nil, err
+		}
 		if err != nil {
 			log.Error("Couldn't parse signup JSON request: %v\n", err)
 			return nil, ErrBadJSON
@@ -364,6 +366,11 @@ func viewLogin(app *App, w http.ResponseWriter, r *http.Request) error {
 
 func webLogin(app *App, w http.ResponseWriter, r *http.Request) error {
 	err := login(app, w, r)
+	if errors.Is(err, ErrBodyTooLarge) {
+		// The login form sends no JSON, so answer in JSON rather than by
+		// going back to the form.
+		return impart.WriteError(w, ErrBodyTooLarge)
+	}
 	if err != nil {
 		username := r.FormValue("alias")
 		// Login request was unsuccessful; save the error in the session and redirect them
@@ -445,8 +452,10 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 	} else {
 		// Get params
 		if reqJSON {
-			decoder := json.NewDecoder(r.Body)
-			err := decoder.Decode(&signin)
+			err = decodeJSONBody(w, r, formBodyLimit, &signin)
+			if errors.Is(err, ErrBodyTooLarge) {
+				return err
+			}
 			if err != nil {
 				log.Error("Couldn't parse signin JSON request: %v\n", err)
 				return ErrBadJSON

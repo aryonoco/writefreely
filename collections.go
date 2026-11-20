@@ -13,6 +13,7 @@ package writefreely
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"math"
@@ -1377,8 +1378,12 @@ func handleWebCollectionUnlock(app *App, w http.ResponseWriter, r *http.Request)
 
 	// Get params
 	if impart.ReqJSON(r) {
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&readReq)
+		err := decodeJSONBody(w, r, formBodyLimit, &readReq)
+		if errors.Is(err, ErrBodyTooLarge) {
+			// The password form sends no JSON, so answer in JSON rather
+			// than by going back to the form.
+			return impart.WriteError(w, ErrBodyTooLarge)
+		}
 		if err != nil {
 			log.Error("Couldn't parse readReq JSON request: %v\n", err)
 			return ErrBadJSON
