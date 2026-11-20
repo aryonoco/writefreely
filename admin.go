@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -170,10 +172,13 @@ func handleViewAdminSettings(app *App, u *User, w http.ResponseWriter, r *http.R
 		Config config.AppCfg
 
 		Message, ConfigMessage string
+		ConfigWritable         bool
 	}{
 		UserPage:  NewUserPage(app, r, u, "Admin", nil),
 		AdminPage: NewAdminPage(app),
 		Config:    app.cfg.App,
+
+		ConfigWritable: configWritable(app),
 
 		Message:       r.FormValue("m"),
 		ConfigMessage: r.FormValue("cm"),
@@ -565,40 +570,57 @@ func handleAdminUpdateSite(app *App, u *User, w http.ResponseWriter, r *http.Req
 }
 
 func handleAdminUpdateConfig(apper Apper, u *User, w http.ResponseWriter, r *http.Request) error {
-	apper.App().cfg.App.SiteName = r.FormValue("site_name")
-	apper.App().cfg.App.SiteDesc = r.FormValue("site_desc")
-	apper.App().cfg.App.Landing = r.FormValue("landing")
-	apper.App().cfg.App.OpenRegistration = r.FormValue("open_registration") == "on"
-	apper.App().cfg.App.OpenDeletion = r.FormValue("open_deletion") == "on"
+	// Apply the form to a copy, and only make it the running configuration
+	// once config.ini has been written.
+	cfg := *apper.App().cfg
+	cfg.App.SiteName = r.FormValue("site_name")
+	cfg.App.SiteDesc = r.FormValue("site_desc")
+	cfg.App.Landing = r.FormValue("landing")
+	cfg.App.OpenRegistration = r.FormValue("open_registration") == "on"
+	cfg.App.OpenDeletion = r.FormValue("open_deletion") == "on"
 	mul, err := strconv.Atoi(r.FormValue("min_username_len"))
 	if err == nil {
-		apper.App().cfg.App.MinUsernameLen = mul
+		cfg.App.MinUsernameLen = mul
 	}
 	mb, err := strconv.Atoi(r.FormValue("max_blogs"))
 	if err == nil {
-		apper.App().cfg.App.MaxBlogs = mb
+		cfg.App.MaxBlogs = mb
 	}
-	apper.App().cfg.App.Federation = r.FormValue("federation") == "on"
-	apper.App().cfg.App.PublicStats = r.FormValue("public_stats") == "on"
-	apper.App().cfg.App.Monetization = r.FormValue("monetization") == "on"
-	apper.App().cfg.App.Private = r.FormValue("private") == "on"
-	apper.App().cfg.App.LocalTimeline = r.FormValue("local_timeline") == "on"
-	if apper.App().cfg.App.LocalTimeline && apper.App().timeline == nil {
+	cfg.App.Federation = r.FormValue("federation") == "on"
+	cfg.App.PublicStats = r.FormValue("public_stats") == "on"
+	cfg.App.Monetization = r.FormValue("monetization") == "on"
+	cfg.App.Private = r.FormValue("private") == "on"
+	cfg.App.LocalTimeline = r.FormValue("local_timeline") == "on"
+	cfg.App.UserInvites = r.FormValue("user_invites")
+	if cfg.App.UserInvites == "none" {
+		cfg.App.UserInvites = ""
+	}
+	cfg.App.DefaultVisibility = r.FormValue("default_visibility")
+
+	err = apper.SaveConfig(&cfg)
+	if err != nil {
+		m := "?cm=" + url.QueryEscape("Settings were not saved: "+err.Error())
+		return impart.HTTPError{Status: http.StatusFound, Message: "/admin/settings" + m + "#config"}
+	}
+	*apper.App().cfg = cfg
+
+	if cfg.App.LocalTimeline && apper.App().timeline == nil {
 		log.Info("Initializing local timeline...")
 		initLocalTimeline(apper.App())
 	}
-	apper.App().cfg.App.UserInvites = r.FormValue("user_invites")
-	if apper.App().cfg.App.UserInvites == "none" {
-		apper.App().cfg.App.UserInvites = ""
-	}
-	apper.App().cfg.App.DefaultVisibility = r.FormValue("default_visibility")
 
-	m := "?cm=Configuration+saved."
-	err = apper.SaveConfig(apper.App().cfg)
+	return impart.HTTPError{Status: http.StatusFound, Message: "/admin/settings?cm=Configuration+saved.#config"}
+}
+
+// configWritable reports whether config.ini can be opened for writing. It
+// doesn't truncate or otherwise change the file.
+func configWritable(app *App) bool {
+	f, err := os.OpenFile(app.cfgFile, os.O_WRONLY, 0)
 	if err != nil {
-		m = "?cm=" + err.Error()
+		return false
 	}
-	return impart.HTTPError{http.StatusFound, "/admin/settings" + m + "#config"}
+	_ = f.Close()
+	return true
 }
 
 func updateAppStats() {
