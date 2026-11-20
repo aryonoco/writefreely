@@ -34,7 +34,6 @@ import (
 	"github.com/writeas/activity/streams"
 	"github.com/writeas/httpsig"
 	"github.com/writeas/impart"
-	"github.com/writeas/web-core/activitypub"
 	"github.com/writeas/web-core/activitystreams"
 	"github.com/writeas/web-core/id"
 	"github.com/writeas/web-core/log"
@@ -815,7 +814,7 @@ func makeActivityPost(hostName string, p *activitystreams.Person, url string, m 
 	r.Header.Add("Digest", "SHA-256="+base64.StdEncoding.EncodeToString(h.Sum(nil)))
 
 	// Sign using the 'Signature' header
-	privKey, err := activitypub.DecodePrivateKey(p.GetPrivKey())
+	privKey, err := decodeActorPrivateKey(p.GetPrivKey())
 	if err != nil {
 		return err
 	}
@@ -909,7 +908,7 @@ func resolveIRI(hostName, url string) (body []byte, servedFrom string, err error
 	r.Header.Add("Digest", "SHA-256="+base64.StdEncoding.EncodeToString(h.Sum(nil)))
 
 	// Sign using the 'Signature' header
-	privKey, err := activitypub.DecodePrivateKey(p.GetPrivKey())
+	privKey, err := decodeActorPrivateKey(p.GetPrivKey())
 	if err != nil {
 		return nil, "", err
 	}

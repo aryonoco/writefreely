@@ -2790,6 +2790,9 @@ func (db *datastore) DeleteAccount(userID int64) error {
 	return nil
 }
 
+// GetAPActorKeys returns the collection's ActivityPub key pair, creating it
+// on first use and replacing a stored pair that doesn't decode. Callers that
+// do this at the same time all return the one pair that ends up stored.
 func (db *datastore) GetAPActorKeys(collectionID int64) ([]byte, []byte) {
 	var pub, priv []byte
 	err := db.QueryRow("SELECT public_key, private_key FROM collectionkeys WHERE collection_id = ?", collectionID).Scan(&pub, &priv)
@@ -2803,6 +2806,10 @@ func (db *datastore) GetAPActorKeys(collectionID int64) ([]byte, []byte) {
 		}
 		_, err = db.Exec("INSERT INTO collectionkeys (collection_id, public_key, private_key) VALUES (?, ?, ?)", collectionID, pub, priv)
 		if err != nil {
+			// Another caller may have stored a pair first; if so, use it.
+			if storedPub, storedPriv, ok := db.getUsableAPActorKeys(collectionID); ok {
+				return storedPub, storedPriv
+			}
 			log.Error("Unable to INSERT new activitypub keypair: %v", err)
 			return nil, nil
 		}
@@ -2810,20 +2817,44 @@ func (db *datastore) GetAPActorKeys(collectionID int64) ([]byte, []byte) {
 		log.Error("Couldn't SELECT collectionkeys: %v", err)
 		return nil, nil
 	case !actorKeysUsable(pub, priv):
-		// Replace the stored keys with a new pair
+		oldPub, oldPriv := pub, priv
 		pub, priv, err = generateActorKeys()
 		if err != nil {
 			log.Error("Unable to generate activitypub keypair: %v", err)
 			return nil, nil
 		}
-		_, err = db.ExecContext(context.Background(), "UPDATE collectionkeys SET public_key = ?, private_key = ? WHERE collection_id = ?", pub, priv, collectionID)
+		// Replace the stored keys with the new pair only if they are still
+		// the ones read above. hex() compares the stored bytes the same way
+		// in MySQL and SQLite, whether they were stored as text or a blob.
+		res, err := db.ExecContext(context.Background(), "UPDATE collectionkeys SET public_key = ?, private_key = ? WHERE collection_id = ? AND hex(public_key) = ? AND hex(private_key) = ?",
+			pub, priv, collectionID, fmt.Sprintf("%X", oldPub), fmt.Sprintf("%X", oldPriv))
 		if err != nil {
 			log.Error("Unable to UPDATE activitypub keypair: %v", err)
 			return nil, nil
 		}
+		if n, err := res.RowsAffected(); err == nil && n == 1 {
+			log.Info("Replaced unusable activitypub keypair of collection %d", collectionID)
+			return pub, priv
+		}
+		// Another caller replaced them first: use the pair it stored.
+		if storedPub, storedPriv, ok := db.getUsableAPActorKeys(collectionID); ok {
+			return storedPub, storedPriv
+		}
+		log.Error("Unable to replace unusable activitypub keypair of collection %d", collectionID)
+		return nil, nil
 	}
 
 	return pub, priv
+}
+
+// getUsableAPActorKeys returns the collection's stored key pair, and whether
+// there is one and it decodes.
+func (db *datastore) getUsableAPActorKeys(collectionID int64) (pub, priv []byte, ok bool) {
+	err := db.QueryRowContext(context.Background(), "SELECT public_key, private_key FROM collectionkeys WHERE collection_id = ?", collectionID).Scan(&pub, &priv)
+	if err != nil || !actorKeysUsable(pub, priv) {
+		return nil, nil, false
+	}
+	return pub, priv, true
 }
 
 func (db *datastore) CreateUserInvite(id string, userID int64, maxUses int, expires *time.Time) error {
