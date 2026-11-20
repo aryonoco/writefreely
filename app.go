@@ -92,6 +92,9 @@ type App struct {
 	loginLimitOnce sync.Once
 	loginLimit     *loginLimiter
 	trustedProxies proxyList
+
+	keyRefetchOnce sync.Once
+	keyRefetch     *keyRefetches
 }
 
 // DB returns the App's datastore

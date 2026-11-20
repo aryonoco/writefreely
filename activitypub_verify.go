@@ -90,7 +90,8 @@ type inboxKey struct {
 //
 // The key comes from remoteuserkeys when it is stored there, else from the
 // actor document at the key ID without its fragment. A stored key that
-// fails is fetched again once, in case the actor has replaced it.
+// fails is fetched again once, in case the actor has replaced it, but no
+// more than once per keyRefetchInterval for each key ID.
 func verifyInboxRequest(app *App, r *http.Request, body []byte) (signer string, err error) {
 	sig, err := parseInboxSignature(r)
 	if err != nil {
@@ -176,6 +177,9 @@ func (sig *inboxSignature) verify(app *App, r *http.Request, body []byte) (strin
 	stored, ok := storedInboxKey(r.Context(), app, sig.keyID)
 	if ok && verifyInboxSignature(stored.pub, signed, sig.signature) == nil {
 		return stored.owner, nil
+	}
+	if ok && !app.inboxKeyRefetches().allow(sig.keyID) {
+		return "", fmt.Errorf("%w: stored key does not verify, and was fetched again less than %v ago", errBadSignature, keyRefetchInterval)
 	}
 
 	key, err := fetchInboxKey(app, sig.keyID, sig.keyActor) //nolint:contextcheck // resolveIRI takes no context; its client's timeout bounds the fetch
