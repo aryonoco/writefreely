@@ -305,7 +305,14 @@ var deletePost = function(postID, token, callback) {
 				// Have it remove the post locally only.
 			} else {
 				$delBtn.innerHTML = 'delete';
-				alert("Failed to delete. Please try again.");
+				var msg = "Failed to delete. Please try again.";
+				if (http.status == 403) {
+					// The server says what to do, such as reload the page.
+					try {
+						msg = JSON.parse(http.responseText).error_msg || msg;
+					} catch (e) {}
+				}
+				alert(msg);
 			}
 		}
 	}
