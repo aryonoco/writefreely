@@ -5,12 +5,11 @@ name: Build container image, publish as GitHub-package
 # separate terms of service, privacy policy, and support
 # documentation.
 
-on:
-  push:
-    branches: [ main, develop ]
-    # Publish semver tags as releases.
-    tags:
-      - 'v*.*.*'
+# This fork publishes no container images. The workflow runs only when
+# dispatched by hand, and its job is off even then. The file stays, so a
+# rebase onto an upstream change to it conflicts here rather than bringing
+# its triggers back unnoticed.
+on: workflow_dispatch
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -20,6 +19,8 @@ env:
 
 jobs:
   build:
+    # Off in this fork, as the note above on: says
+    if: false
 
     runs-on: ubuntu-latest
     permissions:

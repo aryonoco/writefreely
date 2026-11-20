@@ -1,0 +1,86 @@
+# Tags each commit on divbast that divbast-ci passed with the next
+# v<base>-divbast.<N>, the versions the divbast image builds from.
+name: divbast-release
+
+# The job below acts only on divbast-ci's runs for pushes to divbast and the
+# daily runs of its tip, never a pull request's, and it takes nothing from
+# the triggering run but its commit, which is already on divbast.
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers] see above
+    workflows: [divbast-ci]
+    types: [completed]
+    branches: [divbast]
+
+permissions: {}
+
+env:
+  # The upstream release divbast is based on. A rebase onto a new upstream
+  # release changes it, and the count starts again at 1.
+  BASE_VERSION: 0.17.3
+
+# bash with -e and pipefail, so a command that fails fails its step, in a
+# pipeline too. A step that names no shell otherwise runs bash -e alone.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tag:
+    name: tag
+    # A push to divbast, or the daily run of its tip (divbast-ci.yml says
+    # why that exists), that passed. Never a pull request's run.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'push' ||
+      github.event.workflow_run.event == 'schedule')
+    # One at a time, so each counts from the tag the one before it pushed.
+    # Queued rather than the default single pending slot, so a run waiting
+    # never cancels another that waits.
+    concurrency:
+      group: divbast-release
+      cancel-in-progress: false
+      queue: max
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write # push the tag
+    steps:
+      # The tested commit, with every commit and tag next-tag.sh counts
+      # from. The job's token stays in the clone's git config for the tag
+      # push below; nothing but this repository's own script and git runs
+      # after it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          persist-credentials: true # zizmor: ignore[artipacked] see above
+
+      - name: Tag the tested commit
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # A commit tagged before, which every daily run after the last
+          # merge finds, keeps its tag
+          tagged=$(git tag --points-at "${HEAD_SHA}" --list "v${BASE_VERSION}-divbast.*")
+          if [[ -n ${tagged} ]]; then
+            echo "::notice::${HEAD_SHA} is already tagged ${tagged//$'\n'/, }"
+            exit 0
+          fi
+
+          tag=$(.github/divbast/next-tag.sh "${BASE_VERSION}")
+
+          # A run that finishes after a later commit's run has tagged that
+          # commit leaves its own untagged, so a higher N is always a later
+          # commit
+          n=${tag##*.}
+          if ((n > 1)); then
+            newest="v${BASE_VERSION}-divbast.$((n - 1))"
+            if git merge-base --is-ancestor "${HEAD_SHA}" "${newest}"; then
+              echo "::notice::${newest} already tags a later commit than ${HEAD_SHA}"
+              exit 0
+            fi
+          fi
+
+          git tag "${tag}" "${HEAD_SHA}"
+          git push origin "refs/tags/${tag}"
+          echo "::notice::Tagged ${HEAD_SHA} ${tag}"

@@ -1,0 +1,96 @@
+# The divbast branch's tests and lint, on every pull request and every
+# commit that lands on divbast. A success on divbast is what
+# divbast-release.yml tags.
+name: divbast-ci
+
+on:
+  pull_request:
+  push:
+    branches: [divbast]
+  # A merge that auto-merge completes is made with this repository's
+  # GITHUB_TOKEN, and GitHub starts no workflow for what that token does, so
+  # a Dependabot pull request's merge would never run here or be tagged.
+  # Once a day the tip of the default branch, divbast, runs anyway, and
+  # divbast-release.yml tags it if it carries no tag yet.
+  schedule:
+    - cron: '23 4 * * *'
+
+permissions: {}
+
+env:
+  # The mise release jdx/mise-action installs, the one divbast/ci v4.3.0
+  # pins. Nothing here moves it, so it changes by hand.
+  MISE_VERSION: 2026.11.10
+
+# A newer push to a pull request supersedes the run before it. Every other
+# run is its own group and completes, since each one on divbast may be
+# tagged.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+# bash with -e and pipefail, so a command that fails fails its step, in a
+# pipeline too. A step that names no shell otherwise runs bash -e alone.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # The check divbast's ruleset requires, which Dependabot's auto-merge
+  # waits on
+  test:
+    name: test
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      # Every commit, which golangci-lint's --new-from-rev diffs against
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The tools and the environment mise.toml names: Go, golangci-lint,
+      # actionlint and shellcheck, GOTOOLCHAIN=local and GOFLAGS=-tags=sqlite
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+        with:
+          version: ${{ env.MISE_VERSION }}
+
+      # go test runs its own subset of go vet's checks before the tests
+      - name: Tests
+        run: go test -race -tags sqlite ./...
+
+      # Only the lines a change touches: upstream's own code doesn't pass
+      # this configuration, so a run over the whole tree would fail on every
+      # change. govet runs every analyzer on those lines, which stands in
+      # for a full go vet.
+      - name: Lint the changed lines
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          # The commit the changes start from: a pull request's base, or the
+          # commit a push to divbast moved on from. The daily run names
+          # none, a push that creates the branch names all zeros, and a
+          # force push can name one this history doesn't hold; each of
+          # those lints the changes of the last commit.
+          case "${EVENT}" in
+            pull_request) base=${PR_BASE} ;;
+            push) base=${PUSH_BEFORE} ;;
+            *) base= ;;
+          esac
+          if [[ -z ${base} ]] ||
+            ! git merge-base --is-ancestor "${base}" HEAD 2>/dev/null; then
+            base=$(git rev-parse HEAD~1)
+          fi
+          echo "Linting the changes since ${base}"
+          golangci-lint run --new-from-rev "${base}"
+
+      # The workflows, and the script divbast-release.yml tags with
+      - name: Check the workflows and scripts
+        run: |
+          actionlint
+          shellcheck .github/divbast/*.sh
+          bash .github/divbast/next-tag_test.sh
