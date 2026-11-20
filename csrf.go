@@ -17,7 +17,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gofrs/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/writeas/impart"
@@ -122,15 +121,10 @@ func csrfExempt(r *http.Request) bool {
 }
 
 // isAccessToken reports whether an Authorization header holds an access
-// token, as "Token <uuid>" or a bare uuid, the forms auth.GetToken reads.
-// Unlike GetToken, it logs nothing for the other schemes, like Basic, that
-// browsers send.
+// token. It logs nothing for the other schemes, like Basic, that browsers
+// send.
 func isAccessToken(header string) bool {
-	if f := strings.Fields(header); len(f) == 2 && f[0] == "Token" {
-		header = f[1]
-	}
-	_, err := uuid.FromString(header)
-	return err == nil
+	return parseAccessToken(header) != nil
 }
 
 // hasJSONBody reports whether r says its body is JSON.

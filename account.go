@@ -298,7 +298,7 @@ func handleAPILogout(app *App, w http.ResponseWriter, r *http.Request) error {
 	if accessToken == "" {
 		return ErrNoAccessToken
 	}
-	t := auth.GetToken(accessToken)
+	t := parseAccessToken(accessToken)
 	if len(t) == 0 {
 		return ErrNoAccessToken
 	}
@@ -465,8 +465,6 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 			}
 		}
 
-		log.Info("Login: Attempting login for '%s'", signin.Alias)
-
 		// Validate required params (all)
 		if signin.Alias == "" {
 			msg := "Parameter `alias` required."
@@ -494,7 +492,6 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 		// Retrieve password
 		u, err = app.db.GetUserForAuth(signin.Alias)
 		if err != nil {
-			log.Info("Unable to getUserForAuth on %s: %v", signin.Alias, err)
 			if !errors.Is(err, ErrUserNotFound) {
 				return err
 			}
@@ -507,7 +504,7 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 			// User has no email set, so check if they haven't added a password, either,
 			// so we can return a more helpful error message.
 			if hasPass, _ := app.db.IsUserPassSet(u.ID); !hasPass {
-				log.Info("Tried logging into %s, but no password or email.", signin.Alias)
+				log.Info("Tried logging into %s, but no password or email.", u.Username)
 				return impart.HTTPError{http.StatusPreconditionFailed, "This user never added a password or email address. Please contact us for help."}
 			}
 		}
@@ -1277,7 +1274,7 @@ func viewResetPassword(app *App, w http.ResponseWriter, r *http.Request) error {
 		}
 		err = app.db.ConsumePasswordResetToken(token)
 		if err != nil {
-			log.Error("Couldn't consume token %s for user %d!!! %s", token, userID, err)
+			log.Error("Couldn't consume token for user %d!!! %s", userID, err)
 		}
 		addSessionFlash(app, w, r, "Your password was reset. Now you can log in below.", nil)
 		return impart.HTTPError{http.StatusFound, "/login"}
@@ -1635,7 +1632,7 @@ func saveTempInfo(app *App, key, val string, r *http.Request, w http.ResponseWri
 	session.Values[key] = val
 	err = session.Save(r, w)
 	if err != nil {
-		log.Error("Couldn't saveTempInfo for key-val (%s:%s): %v", key, val, err)
+		log.Error("Couldn't saveTempInfo for key %s: %v", key, err)
 	}
 	return err
 }

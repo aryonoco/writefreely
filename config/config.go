@@ -61,6 +61,11 @@ type (
 		GopherPort           int `ini:"gopher_port"`
 		GopherAdvertisedPort int `ini:"gopher_advertised_port"`
 
+		// InboxMaxBytes is the largest ActivityPub inbox request body
+		// accepted, in bytes; a larger one is answered with 413. 0 or
+		// less means 1 MiB (1048576).
+		InboxMaxBytes int64 `ini:"inbox_max_bytes"`
+
 		Dev bool `ini:"-"`
 	}
 
@@ -252,6 +257,19 @@ func (cfg *Config) UseSQLite(fresh bool) {
 	if fresh {
 		cfg.Database.FileName = "writefreely.db"
 	}
+}
+
+// DefaultInboxMaxBytes is the largest inbox request body accepted when
+// inbox_max_bytes is unset.
+const DefaultInboxMaxBytes = 1 << 20
+
+// InboxBodyLimit returns the largest inbox request body accepted, in bytes:
+// inbox_max_bytes, or DefaultInboxMaxBytes when it is unset.
+func (sc *ServerCfg) InboxBodyLimit() int64 {
+	if sc.InboxMaxBytes > 0 {
+		return sc.InboxMaxBytes
+	}
+	return DefaultInboxMaxBytes
 }
 
 // IsSecureStandalone returns whether or not the application is running as a

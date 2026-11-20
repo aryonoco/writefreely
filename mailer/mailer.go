@@ -14,7 +14,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
+	"net"
 	netmail "net/mail"
+	"net/textproto"
 	"strings"
 
 	"github.com/mailgun/mailgun-go"
@@ -169,6 +172,24 @@ func (m *Message) AddRecipientAndVariables(r string, vars map[string]string) err
 	}
 }
 
+// recipientError describes err, a failure to send to one recipient, without
+// any text that could carry the recipient's address: an SMTP server's reply
+// often repeats it, and an address that doesn't parse is quoted in full. A
+// reply is given by its code. A network error or a closed connection, which
+// names the server at most, is kept as it is.
+func recipientError(err error) error {
+	var reply *textproto.Error
+	var netErr net.Error
+	switch {
+	case errors.As(err, &reply):
+		return fmt.Errorf("the SMTP server answered %d", reply.Code)
+	case errors.As(err, &netErr), errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return err
+	default:
+		return errors.New("the message couldn't be composed or sent")
+	}
+}
+
 // Send sends the given message via the preferred provider.
 func (m *Mailer) Send(msg *Message) error {
 	if m.smtp != nil {
@@ -201,7 +222,8 @@ func (m *Mailer) Send(msg *Message) error {
 			if e == nil {
 				emailSent = true
 			} else {
-				log.Error("Unable to send email to %s: %v", r.email, e)
+				e = recipientError(e)
+				log.Error("Unable to send email to a recipient: %v", e)
 				err = e
 			}
 		}
