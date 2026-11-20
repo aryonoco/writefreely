@@ -338,7 +338,7 @@ func TestInboxRefusesUnsigned(t *testing.T) { //nolint:paralleltest // newFetchT
 	}
 }
 
-func TestInboxRefusesForgedSignature(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
+func TestInboxRefusesBadSignature(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
 	app := newInboxTestApp(t)
 	actors := newInboxTestActors(t)
 	actors.set("a", &inboxTestActor{key: &inboxTestKey(t, 0).PublicKey})
@@ -352,6 +352,50 @@ func TestInboxRefusesForgedSignature(t *testing.T) { //nolint:paralleltest // ne
 	if n := followerCount(t, app); n != 0 {
 		t.Errorf("%d followers, want 0", n)
 	}
+}
+
+func TestInboxAcceptsSignatureWithoutAlgorithm(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
+	app := newInboxTestApp(t)
+	actors := newInboxTestActors(t)
+	key := inboxTestKey(t, 0)
+	actors.set("a", &inboxTestActor{key: &key.PublicKey})
+
+	body := inboxActivity(t, "Follow", actors.iri("a"), inboxTestBlogIRI)
+	r := newInboxRequest(t, body)
+	signInboxRequest(t, r, body, actors.keyID("a"), key)
+	r.Header.Set("Signature", strings.Replace(r.Header.Get("Signature"), `algorithm="rsa-sha256",`, "", 1))
+	if strings.Contains(r.Header.Get("Signature"), "algorithm") {
+		t.Fatalf("Signature still names an algorithm: %s", r.Header.Get("Signature"))
+	}
+	assertInboxStatus(t, serveInbox(t, app, r), http.StatusOK)
+}
+
+func TestInboxAcceptsKeyIDOfActor(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
+	app := newInboxTestApp(t)
+	actors := newInboxTestActors(t)
+	key := inboxTestKey(t, 0)
+	actors.set("a", &inboxTestActor{key: &key.PublicKey})
+	actors.set("b", &inboxTestActor{key: &inboxTestKey(t, 1).PublicKey})
+	actors.set("c", &inboxTestActor{key: &key.PublicKey, owner: "https://elsewhere.test/users/c"})
+
+	// The actor's own IRI as keyId, for a key it lists as <actor>#main-key
+	body := inboxActivity(t, "Follow", actors.iri("a"), inboxTestBlogIRI)
+	r := newInboxRequest(t, body)
+	signInboxRequest(t, r, body, actors.iri("a"), key)
+	assertInboxStatus(t, serveInbox(t, app, r), http.StatusOK)
+
+	// Another actor's IRI as keyId, for a Follow by A
+	keyB := inboxTestKey(t, 1)
+	body = inboxActivity(t, "Follow", actors.iri("a"), inboxTestBlogIRI)
+	r = newInboxRequest(t, body)
+	signInboxRequest(t, r, body, actors.iri("b"), keyB)
+	assertInboxStatus(t, serveInbox(t, app, r), http.StatusUnauthorized)
+
+	// The actor's IRI as keyId, for a key whose owner is on another host
+	body = inboxActivity(t, "Follow", actors.iri("c"), inboxTestBlogIRI)
+	r = newInboxRequest(t, body)
+	signInboxRequest(t, r, body, actors.iri("c"), key)
+	assertInboxStatus(t, serveInbox(t, app, r), http.StatusUnauthorized)
 }
 
 func TestInboxRefusesActorMismatch(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
