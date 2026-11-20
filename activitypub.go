@@ -374,15 +374,32 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 	// Track whether a callback has written a response
 	var responseWritten bool
 
-	// Read raw body for debugging before decoding
-	var rawBody bytes.Buffer
-	tee := io.TeeReader(r.Body, &rawBody)
+	// Read the body once: the signature covers its digest, and the
+	// activity is decoded from it only once the signature verifies.
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Error("Failed reading inbox body: %v", err)
+		return impart.HTTPError{Status: http.StatusBadRequest, Message: "Couldn't read the request body."}
+	}
+	signer, err := verifyInboxRequest(app, r, body)
+	if err != nil {
+		if errors.Is(err, errSignerGone) && inboxActivityType(body) == "Delete" {
+			// The account is gone with its key, so there is nothing left
+			// to act on; accepting the Delete stops its redelivery.
+			return impart.RenderActivityJSON(w, "", http.StatusAccepted)
+		}
+		return errInboxUnverified
+	}
 
 	var m map[string]any
-	if err := json.NewDecoder(tee).Decode(&m); err != nil {
+	if err = json.NewDecoder(bytes.NewReader(body)).Decode(&m); err != nil {
 		log.Error("Failed decoding JSON: %v", err)
-		log.Error("Raw body: %s", rawBody.String())
+		log.Error("Raw body: %s", body)
 		return err
+	}
+	if !activityActorIs(m, signer) {
+		log.Info("Inbox activity's actor is not its signer %s", signer)
+		return errInboxUnverified
 	}
 	if debugging {
 		log.Info("Decoded JSON: %v", m)
@@ -395,6 +412,16 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 	var likePostID, unlikePostID string
 	fullActor := &activitystreams.Person{}
 	var remoteUser *RemoteUser
+
+	// signerActor gets the actor at iri, which must be the signer.
+	signerActor := func(iri string) (*activitystreams.Person, *RemoteUser, error) {
+		actor, ru, actorErr := getActor(app, iri)
+		if actorErr == nil && actor.ID != signer {
+			log.Info("Inbox activity's actor %s is %s, not its signer", iri, actor.ID)
+			return nil, nil, errWrongActor
+		}
+		return actor, ru, actorErr
+	}
 
 	res := &streams.Resolver{
 		LikeCallback: func(l *streams.Like) error {
@@ -439,7 +466,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 			if from == nil {
 				return fmt.Errorf("No valid actor string")
 			}
-			fullActor, remoteUser, err = getActor(app, from.String())
+			fullActor, remoteUser, err = signerActor(from.String())
 			if err != nil {
 				return err
 			}
@@ -488,7 +515,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 			if to == nil {
 				return fmt.Errorf("No valid `to` string")
 			}
-			fullActor, remoteUser, err = getActor(app, to.String())
+			fullActor, remoteUser, err = signerActor(to.String())
 			if err != nil {
 				return err
 			}
@@ -518,7 +545,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 					if err != nil {
 						return err
 					}
-					fullActor, remoteUser, err = getActor(app, from.String())
+					fullActor, remoteUser, err = signerActor(from.String())
 					if err != nil {
 						return err
 					}
@@ -568,6 +595,9 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 		},
 	}
 	if err := res.Deserialize(m); err != nil {
+		if errors.Is(err, errWrongActor) {
+			return errInboxUnverified
+		}
 		// 3) Any errors from #2 can be handled, or the payload is an unknown type.
 		log.Error("Unable to resolve Activity: %v", err)
 		if debugging {
@@ -852,11 +882,13 @@ func isPublicIRI(iri string) error {
 	return nil
 }
 
-func resolveIRI(hostName, url string) ([]byte, error) {
+// resolveIRI fetches url and returns the response body, with the URL that
+// served it, which differs from url when the server redirected.
+func resolveIRI(hostName, url string) (body []byte, servedFrom string, err error) { //nolint:gocritic // importShadow: the parameter keeps its name; the url package is not used here
 	log.Info("GET %s", url)
 
 	if err := isPublicIRI(url); err != nil {
-		return nil, fmt.Errorf("refusing to fetch IRI: %v", err)
+		return nil, "", fmt.Errorf("refusing to fetch IRI: %w", err)
 	}
 
 	r, _ := http.NewRequest("GET", url, nil)
@@ -871,7 +903,7 @@ func resolveIRI(hostName, url string) ([]byte, error) {
 	// Sign using the 'Signature' header
 	privKey, err := activitypub.DecodePrivateKey(p.GetPrivKey())
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	signer := httpsig.NewSigner(p.PublicKey.ID, privKey, httpsig.RSASHA256, []string{"(request-target)", "date", "host", "digest"})
 	err = signer.SignSigHeader(r)
@@ -890,22 +922,36 @@ func resolveIRI(hostName, url string) ([]byte, error) {
 
 	resp, err := activityPubClient().Do(r)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if debugging {
 		log.Info("Status  : %s", resp.Status)
 		log.Info("Response: %s", body)
 	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, "", &remoteStatusError{IRI: url, StatusCode: resp.StatusCode}
+	}
 
-	return body, nil
+	return body, resp.Request.URL.String(), nil
+}
+
+// remoteStatusError is resolveIRI's error when the remote server answers
+// with a status other than 2xx.
+type remoteStatusError struct {
+	IRI        string
+	StatusCode int
+}
+
+func (e *remoteStatusError) Error() string {
+	return fmt.Sprintf("GET %s: %d %s", e.IRI, e.StatusCode, http.StatusText(e.StatusCode))
 }
 
 func deleteFederatedPost(app *App, p *PublicPost, collID int64) error {
@@ -1117,31 +1163,25 @@ func getActor(app *App, actorIRI string) (*activitystreams.Person, *RemoteUser, 
 	if err != nil {
 		if iErr, ok := err.(impart.HTTPError); ok {
 			if iErr.Status == http.StatusNotFound {
-				// Fetch remote actor
+				// Fetch remote actor, through fetchRemoteActor, which also
+				// refuses a document naming an actor or key on another host
 				log.Info("Not found; fetching actor %s remotely", actorIRI)
-				actorResp, err := resolveIRI(app.cfg.App.Host, actorIRI)
+				var baseActor *activitystreams.Person
+				baseActor, err = fetchRemoteActor(app, actorIRI)
 				if err != nil {
 					log.Error("Unable to get base actor! %v", err)
 					return nil, nil, impart.HTTPError{http.StatusInternalServerError, "Couldn't fetch actor."}
 				}
-				if err := unmarshalActor(actorResp, actor); err != nil {
-					log.Error("Unable to unmarshal base actor! %v", err)
-					return nil, nil, impart.HTTPError{http.StatusInternalServerError, "Couldn't parse actor."}
-				}
-				baseActor := &activitystreams.Person{}
-				if err := unmarshalActor(actorResp, baseActor); err != nil {
-					log.Error("Unable to unmarshal actual actor! %v", err)
-					return nil, nil, impart.HTTPError{http.StatusInternalServerError, "Couldn't parse actual actor."}
-				}
 				// Fetch the actual actor using the owner field from the publicKey object
-				actualActorResp, err := resolveIRI(app.cfg.App.Host, baseActor.PublicKey.Owner)
+				actor, err = fetchRemoteActor(app, baseActor.PublicKey.Owner)
 				if err != nil {
 					log.Error("Unable to get actual actor! %v", err)
 					return nil, nil, impart.HTTPError{http.StatusInternalServerError, "Couldn't fetch actual actor."}
 				}
-				if err := unmarshalActor(actualActorResp, actor); err != nil {
-					log.Error("Unable to unmarshal actual actor! %v", err)
-					return nil, nil, impart.HTTPError{http.StatusInternalServerError, "Couldn't parse actual actor."}
+				// A redirect, or a key owned elsewhere, may lead to another actor
+				if actor.ID != actorIRI {
+					log.Info("Actor %s resolved to %s; refusing it", actorIRI, actor.ID)
+					return nil, nil, errWrongActor
 				}
 			} else {
 				return nil, nil, err
