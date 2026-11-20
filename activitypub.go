@@ -657,7 +657,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 		return nil
 	}
 
-	go func() {
+	goSafe("send accept", func() {
 		if to == nil {
 			if debugging {
 				log.Info("No `to` value: likely not needed for this activity type.")
@@ -746,7 +746,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 				log.Error("Couldn't remove follower from DB: %v\n", err)
 			}
 		}
-	}()
+	})
 
 	if !responseWritten {
 		if debugging {

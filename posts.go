@@ -538,7 +538,7 @@ func handleViewPost(app *App, w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	go func() {
+	goSafe("update post view count", func() {
 		if u != nil && ownerID.Valid && ownerID.Int64 == u.ID {
 			// Post is owned by someone; skip view increment since that person is viewing this post.
 			return
@@ -550,7 +550,7 @@ func handleViewPost(app *App, w http.ResponseWriter, r *http.Request) error {
 				log.Error("Unable to update posts count: %v", err)
 			}
 		}
-	}()
+	})
 
 	return nil
 }
@@ -696,7 +696,7 @@ func newPost(app *App, w http.ResponseWriter, r *http.Request) error {
 
 	if newPost.Collection != nil {
 		if !app.cfg.App.Private && app.cfg.App.Federation && !newPost.Created.After(time.Now()) {
-			go federatePost(app, newPost, newPost.Collection.ID, false)
+			goSafe("federate new post", func() { _ = federatePost(app, newPost, newPost.Collection.ID, false) })
 		}
 		if app.cfg.Email.Enabled() && newPost.Collection.EmailSubsEnabled() {
 			go app.db.InsertJob(&PostJob{
@@ -814,7 +814,7 @@ func existingPost(app *App, w http.ResponseWriter, r *http.Request) error {
 		if err == nil && !app.cfg.App.Private && app.cfg.App.Federation {
 			coll.hostName = app.cfg.App.Host
 			pRes.Collection = &CollectionObj{Collection: *coll}
-			go federatePost(app, pRes, pRes.Collection.ID, true)
+			goSafe("federate updated post", func() { _ = federatePost(app, pRes, pRes.Collection.ID, true) })
 		}
 	}
 
@@ -953,7 +953,7 @@ func deletePost(app *App, w http.ResponseWriter, r *http.Request) error {
 		t.Commit()
 	}
 	if coll != nil && !app.cfg.App.Private && app.cfg.App.Federation {
-		go deleteFederatedPost(app, pp, collID.Int64)
+		goSafe("federate post deletion", func() { _ = deleteFederatedPost(app, pp, collID.Int64) })
 	}
 
 	return impart.HTTPError{Status: http.StatusNoContent}
@@ -1011,7 +1011,7 @@ func addPost(app *App, w http.ResponseWriter, r *http.Request) error {
 		if !app.cfg.App.Private && app.cfg.App.Federation {
 			if !pRes.Post.Created.After(time.Now()) {
 				pRes.Post.Collection.hostName = app.cfg.App.Host
-				go federatePost(app, pRes.Post, pRes.Post.Collection.ID, false)
+				goSafe("federate new post", func() { _ = federatePost(app, pRes.Post, pRes.Post.Collection.ID, false) })
 			}
 		}
 		if app.cfg.Email.Enabled() && pRes.Post.Collection.EmailSubsEnabled() {
@@ -1706,7 +1706,7 @@ Are you sure it was ever here?` + shortCodeNoSig,
 		}
 	}
 
-	go func() {
+	goSafe("update post view count", func() {
 		if p.OwnerID.Valid {
 			// Post is owned by someone. Don't update stats if owner is viewing the post.
 			if u != nil && p.OwnerID.Int64 == u.ID {
@@ -1720,7 +1720,7 @@ Are you sure it was ever here?` + shortCodeNoSig,
 				log.Error("Unable to update posts count: %v", err)
 			}
 		}
-	}()
+	})
 
 	return nil
 }
