@@ -50,7 +50,7 @@ require (
 )
 
 require (
-	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/xhit/go-simple-mail/v2 v2.17.0
 )
 
