@@ -596,7 +596,7 @@ func (h *Handler) PlainTextAPI(f handlerFunc) http.HandlerFunc {
 					fmt.Fprintf(w, "Something didn't work quite right. The robots have alerted the humans.")
 				}
 
-				log.Info("\"%s %s\" %d %s \"%s\" \"%s\"", r.Method, r.RequestURI, status, time.Since(start), r.UserAgent(), r.Host)
+				log.Info("\"%s %s\" %d %s \"%s\" \"%s\"", r.Method, r.URL.EscapedPath(), status, time.Since(start), r.UserAgent(), r.Host)
 			}()
 
 			err := f(h.app.App(), w, r)

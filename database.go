@@ -504,7 +504,7 @@ func (db *datastore) GetUserForAuthByID(userID int64) (*User, error) {
 }
 
 func (db *datastore) GetUserNameFromToken(accessToken string) (string, error) {
-	t := auth.GetToken(accessToken)
+	t := parseAccessToken(accessToken)
 	if len(t) == 0 {
 		return "", ErrNoAccessToken
 	}
@@ -528,7 +528,7 @@ func (db *datastore) GetUserNameFromToken(accessToken string) (string, error) {
 }
 
 func (db *datastore) GetUserDataFromToken(accessToken string) (int64, string, error) {
-	t := auth.GetToken(accessToken)
+	t := parseAccessToken(accessToken)
 	if len(t) == 0 {
 		return 0, "", ErrNoAccessToken
 	}
@@ -569,7 +569,7 @@ func (db *datastore) GetUserID(accessToken string) int64 {
 }
 
 func (db *datastore) GetUserIDPrivilege(accessToken string) (userID int64, sudo bool) {
-	t := auth.GetToken(accessToken)
+	t := parseAccessToken(accessToken)
 	if len(t) == 0 {
 		return -1, false
 	}
@@ -2312,7 +2312,7 @@ func (db *datastore) ChangeSettings(app *App, u *User, s *userSettings) error {
 	if s.Email != "" {
 		encEmail, err := data.Encrypt(app.keys.EmailKey, s.Email)
 		if err != nil {
-			log.Error("Couldn't encrypt email %s: %s\n", s.Email, err)
+			log.Error("Couldn't encrypt email: %s\n", err)
 			return impart.HTTPError{http.StatusInternalServerError, "Unable to encrypt email address."}
 		}
 		q.SetBytes(encEmail, "email")
@@ -3297,7 +3297,7 @@ func (db *datastore) AddEmailSubscription(collID, userID int64, email string, co
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok {
 			if mysqlErr.Number == mySQLErrDuplicateKey {
 				// Duplicate, so just return existing subscriber information
-				log.Info("Duplicate subscriber for email %s, user %d; returning existing subscriber", email, userID)
+				log.Info("Duplicate subscriber, user %d; returning existing subscriber", userID)
 				return db.FetchEmailSubscriber(email, userID, collID)
 			}
 		}

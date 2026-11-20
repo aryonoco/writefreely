@@ -361,6 +361,9 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 	}
 	c.hostName = app.cfg.App.Host
 
+	// Bound the body before anything, the debugging dump included, reads it.
+	r.Body = http.MaxBytesReader(w, r.Body, app.cfg.Server.InboxBodyLimit())
+
 	if debugging {
 		dump, err := httputil.DumpRequest(r, true)
 		if err != nil {
@@ -378,6 +381,10 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 	// activity is decoded from it only once the signature verifies.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			return impart.HTTPError{Status: http.StatusRequestEntityTooLarge, Message: "The request body is too large."}
+		}
 		log.Error("Failed reading inbox body: %v", err)
 		return impart.HTTPError{Status: http.StatusBadRequest, Message: "Couldn't read the request body."}
 	}
@@ -394,7 +401,7 @@ func handleFetchCollectionInbox(app *App, w http.ResponseWriter, r *http.Request
 	var m map[string]any
 	if err = json.NewDecoder(bytes.NewReader(body)).Decode(&m); err != nil {
 		log.Error("Failed decoding JSON: %v", err)
-		log.Error("Raw body: %s", body)
+		log.Error("Body length: %d bytes", len(body))
 		return err
 	}
 	if !activityActorIs(m, signer) {
@@ -1028,7 +1035,7 @@ func federatePost(app *App, p *PublicPost, collID int64, isUpdate bool) error {
 		log.Error("Couldn't post! %v", err)
 		return err
 	}
-	log.Info("Followers for %d: %+v", collID, followers)
+	log.Info("Followers for %d: %d", collID, len(*followers))
 
 	inboxes := map[string][]string{}
 	for _, f := range *followers {

@@ -231,8 +231,10 @@ func (app *App) LoadKeys() error {
 	return nil
 }
 
+// ReqLog returns the log line for a request. It carries the path without
+// the query string, which can hold tokens.
 func (app *App) ReqLog(r *http.Request, status int, timeSince time.Duration) string {
-	return fmt.Sprintf("\"%s %s\" %d %s \"%s\"", r.Method, r.RequestURI, status, timeSince, r.UserAgent())
+	return fmt.Sprintf("\"%s %s\" %d %s %q", r.Method, r.URL.EscapedPath(), status, timeSince, r.UserAgent())
 }
 
 // handleViewHome shows page at root path. It checks the configuration and

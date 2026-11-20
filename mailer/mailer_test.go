@@ -18,9 +18,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"errors"
 	"math/big"
 	"net"
 	netmail "net/mail"
+	"net/textproto"
 	"strconv"
 	"strings"
 	"sync"
@@ -322,5 +324,26 @@ func TestValidateOnlyChecksSMTP(t *testing.T) {
 	}
 	if _, err := New(mailgun); err != nil {
 		t.Errorf("New refused a Mailgun configuration: %v", err)
+	}
+}
+
+func TestRecipientErrorLeavesOutAddress(t *testing.T) {
+	t.Parallel()
+	const addr = "someone@example.test"
+
+	reply := &textproto.Error{Code: 550, Msg: "5.1.1 <" + addr + ">: Recipient address rejected: User unknown"}
+	if got := recipientError(reply).Error(); got != "the SMTP server answered 550" {
+		t.Errorf("SMTP reply described as %q, want its code alone", got)
+	}
+
+	// The mail library quotes an address it can't parse
+	unparsed := errors.New("Mail Error: mail: missing @ in addr-spec; Header: [To] Address: [" + addr + "]")
+	if got := recipientError(unparsed).Error(); strings.Contains(got, addr) {
+		t.Errorf("unparsable address described as %q", got)
+	}
+
+	netErr := &net.OpError{Op: "write", Net: "tcp", Err: errors.New("broken pipe")}
+	if got := recipientError(netErr); !errors.Is(got, netErr) {
+		t.Errorf("network error described as %v, want it kept", got)
 	}
 }
