@@ -15,8 +15,3 @@ paths:
       # 1.7.12 does not know it yet (rhysd/actionlint#657). Only that key, so
       # any other unknown key under concurrency still fails.
       - '^unexpected key "queue" for "concurrency" section\. '
-  # Upstream's image workflow is switched off with if: false on its job, a
-  # constant actionlint would have removed. Only there, and only false.
-  .github/workflows/docker-publish.yml:
-    ignore:
-      - '^constant expression "false" in condition\. '
