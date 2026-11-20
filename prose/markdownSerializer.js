@@ -100,8 +100,13 @@ export const writeFreelyMarkdownSerializer = new MarkdownSerializer(
           return;
         }
     },
-    text(state, node) {
-      state.text(node.text || "");
+    text(state, node, parent, index) {
+      const text = node.text || "";
+      // Text after a line break starts a line of its own, so escape what
+      // would start a heading, list or quote there.
+      if (index > 0 && parent.child(index - 1).type.name === "hard_break")
+        state.text(state.esc(text, true), false);
+      else state.text(text);
     },
   },
   {
