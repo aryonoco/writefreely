@@ -24,11 +24,11 @@ const ReadMoreItem = new MenuItem({
   },
 });
 
-export const getMenu = () => {
-  const builtItems = buildMenuItems(writeFreelySchema);
-  const { toggleLink } = builtItems;
-
-  const patchedLink = new MenuItem({
+// The menu's link item, hidden while a comment is selected. Mod-K runs it
+// too, through linkCommand.
+const LinkItem = (() => {
+  const { toggleLink } = buildMenuItems(writeFreelySchema);
+  return new MenuItem({
     ...toggleLink.spec,
     select(state) {
       if (
@@ -40,9 +40,23 @@ export const getMenu = () => {
       return toggleLink.spec.select ? toggleLink.spec.select(state) : true;
     },
   });
+})();
+
+// Runs the link item as clicking it does, only while it is shown and
+// enabled: it opens the link prompt, or removes the selected link.
+export const linkCommand = (state, dispatch, view) => {
+  const { select, enable, run } = LinkItem.spec;
+  if ((select && !select(state)) || (enable && !enable(state))) return false;
+  if (dispatch) run(state, dispatch, view);
+  return true;
+};
+
+export const getMenu = () => {
+  const builtItems = buildMenuItems(writeFreelySchema);
+  const { toggleLink } = builtItems;
 
   const fullMenu = builtItems.fullMenu.map((group) =>
-    group.map((item) => (item === toggleLink ? patchedLink : item))
+    group.map((item) => (item === toggleLink ? LinkItem : item))
   );
 
   return [...fullMenu, [ReadMoreItem]];
