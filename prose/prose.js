@@ -20,7 +20,7 @@ import {
   toStoredMarkdown,
 } from "./markdownSerializer.js";
 import { writeFreelySchema } from "./schema.js";
-import { getMenu } from "./menu.js";
+import { getMenu, linkCommand } from "./menu.js";
 
 let $title = document.querySelector("#title");
 let $content = document.querySelector("#content");
@@ -54,11 +54,8 @@ class ProseMirrorView {
               document.getElementById("publish").click();
               return true;
             },
-            "Mod-k": () => {
-              const linkButton = document.querySelector(
-                ".ProseMirror-icon[title='Add or remove link']"
-              );
-              linkButton.dispatchEvent(new Event("mousedown"));
+            "Mod-k": (state, dispatch, view) => {
+              linkCommand(state, dispatch, view);
               return true;
             },
           }),
