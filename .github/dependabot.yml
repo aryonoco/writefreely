@@ -9,7 +9,12 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "docker"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/prose"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+    groups:
+      editor:
+        applies-to: version-updates
+        patterns:
+          - "*"

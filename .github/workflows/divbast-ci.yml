@@ -57,6 +57,42 @@ jobs:
         with:
           version: ${{ env.MISE_VERSION }}
 
+      # The editor installs from the npm registry alone, so every entry but
+      # the root, links and bundled packages must resolve to the registry
+      # and carry an integrity hash, and none may resolve to git or GitHub.
+      # (getBuiltinModule loads fs the same in a CommonJS or ES module
+      # package, and prose/ is the latter.)
+      - name: Check the editor's lockfile
+        working-directory: prose
+        run: |
+          node -e '
+            const fs = process.getBuiltinModule("node:fs");
+            const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
+            const prefix = "https://registry.npmjs.org/";
+            let bad = 0;
+            for (const [name, p] of Object.entries(lock.packages)) {
+              if (name === "" || p.link === true || p.inBundle === true) continue;
+              if (typeof p.resolved !== "string" || !p.resolved.startsWith(prefix) ||
+                  typeof p.integrity !== "string" || p.integrity === "") {
+                console.log("bad lockfile entry: " + name + " resolved=" + p.resolved +
+                  " integrity=" + p.integrity);
+                bad++;
+              }
+            }
+            process.exit(bad > 0 ? 1 : 0);
+          '
+
+      # Dependabot's editor updates merge on this check, so it builds the
+      # bundle the image ships and runs the editor's tests. Install scripts
+      # never run, and the bundle must exist and be non-empty.
+      - name: Build and test the editor
+        working-directory: prose
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
+          npm run build
+          test -s ../static/js/prose.bundle.js
+
       # go test runs its own subset of go vet's checks before the tests
       - name: Tests
         run: go test -race -tags sqlite ./...
