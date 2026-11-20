@@ -60,6 +60,8 @@ type loginLimiter struct {
 type addrAttempts struct {
 	start time.Time
 	count int
+	// refused is set once an attempt has been refused in this window.
+	refused bool
 }
 
 // newLoginLimiter returns a limiter that refuses an address after limit
@@ -82,22 +84,32 @@ func (l *loginLimiter) expired(a *addrAttempts, now time.Time) bool {
 // allow reports whether addr may attempt a login at now, and if so counts
 // the attempt.
 func (l *loginLimiter) allow(addr string, now time.Time) bool {
+	allowed, _ := l.attempt(addr, now)
+	return allowed
+}
+
+// attempt is allow, and also reports whether the attempt is the first one
+// refused within addr's window, so the caller can log that the address
+// reached the limit once.
+func (l *loginLimiter) attempt(addr string, now time.Time) (allowed, first bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	a, ok := l.entries[addr]
 	if ok && !l.expired(a, now) {
 		if a.count >= l.limit {
-			return false
+			first = !a.refused
+			a.refused = true
+			return false, first
 		}
 		a.count++
-		return true
+		return true, false
 	}
 	if !ok && len(l.entries) >= l.capacity {
 		l.makeRoom(now)
 	}
 	l.entries[addr] = &addrAttempts{start: now, count: 1}
-	return true
+	return true, false
 }
 
 // succeeded hands back the attempt allow counted for addr, once that login
@@ -142,6 +154,18 @@ func (app *App) loginAttempts() *loginLimiter {
 		app.loginLimit = newLoginLimiter(loginFailureLimit, loginFailureWindow, loginLimiterCapacity)
 	})
 	return app.loginLimit
+}
+
+// logLoginLimit logs that addr has reached the login limit. It names the
+// address and the window, never the name typed at the login. When no proxy
+// is listed it also says what to check if many visitors reach the limit.
+func logLoginLimit(addr string, trusted proxyList) {
+	msg := "Login attempt limit reached for %s: further attempts from it are refused for up to %s."
+	if len(trusted.prefixes) == 0 && !trusted.unix {
+		log.Error(msg+" [server] trusted_proxies is empty: behind a reverse proxy every visitor shares the proxy's address, so list the proxy in [server] trusted_proxies.", addr, loginFailureWindow)
+		return
+	}
+	log.Error(msg, addr, loginFailureWindow)
 }
 
 // proxyList is a parsed [server] trusted_proxies list.
@@ -214,8 +238,10 @@ func clientAddr(r *http.Request, trusted proxyList) string {
 	addr := r.RemoteAddr
 	peer := r.RemoteAddr
 	listed := false
+	entry := "the proxy"
 	if sock, ok := r.Context().Value(http.LocalAddrContextKey).(*net.UnixAddr); ok {
 		peer = "the Unix socket " + sock.String()
+		entry = "the proxy (or unix)"
 		listed = trusted.unix
 	} else if a, ok := parseAddr(r.RemoteAddr); ok {
 		addr = a.String()
@@ -224,7 +250,7 @@ func clientAddr(r *http.Request, trusted proxyList) string {
 	}
 	if !listed {
 		if len(forwarded) > 0 && forwardedForWarned.CompareAndSwap(false, true) {
-			log.Error("[WARNING] Ignoring X-Forwarded-For from %s, which isn't in [server] trusted_proxies. If WriteFreely runs behind a reverse proxy, list the proxy there. This is logged once.", peer)
+			log.Error("[WARNING] Ignoring X-Forwarded-For from %s, which isn't in [server] trusted_proxies. If WriteFreely runs behind a reverse proxy, list %s there. This is logged once.", peer, entry)
 		}
 		return addr
 	}

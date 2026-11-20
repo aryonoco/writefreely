@@ -485,8 +485,14 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 		// Skip this check in dev environment
 		addr := clientAddr(r, app.trustedProxies)
 		limiter := app.loginAttempts()
-		if !app.cfg.Server.Dev && !limiter.allow(addr, time.Now()) {
-			return impart.HTTPError{Status: http.StatusTooManyRequests, Message: "You're doing that too much."}
+		if !app.cfg.Server.Dev {
+			allowed, first := limiter.attempt(addr, time.Now())
+			if first {
+				logLoginLimit(addr, app.trustedProxies)
+			}
+			if !allowed {
+				return impart.HTTPError{Status: http.StatusTooManyRequests, Message: "You're doing that too much."}
+			}
 		}
 
 		// Retrieve password
