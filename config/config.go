@@ -38,6 +38,15 @@ type (
 		Port       int    `ini:"port"`
 		Bind       string `ini:"bind"`
 
+		// TrustedProxies is a comma-separated list of the IP addresses and
+		// CIDR prefixes of the reverse proxies in front of this server, plus
+		// unix for one that connects over a Unix socket. For a request from
+		// a listed proxy, the client address comes from X-Forwarded-For.
+		// When WriteFreely runs behind a reverse proxy, list the proxy (or
+		// unix) here: left unset, every visitor shares the proxy's address
+		// and one login limit.
+		TrustedProxies string `ini:"trusted_proxies"`
+
 		TLSCertPath string `ini:"tls_cert_path"`
 		TLSKeyPath  string `ini:"tls_key_path"`
 		Autocert    bool   `ini:"autocert"`
