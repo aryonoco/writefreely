@@ -42,6 +42,7 @@ import (
 	"github.com/writefreely/writefreely/author"
 	"github.com/writefreely/writefreely/config"
 	"github.com/writefreely/writefreely/key"
+	"github.com/writefreely/writefreely/mailer"
 	"github.com/writefreely/writefreely/migrations"
 	"github.com/writefreely/writefreely/page"
 )
@@ -401,6 +402,15 @@ func pageForReq(app *App, r *http.Request) page.StaticPage {
 
 var fileRegex = regexp.MustCompile("/([^/]*\\.[^/]*)$")
 
+// validateConfig reports settings that can't be used, so that the instance
+// refuses to start instead of failing later.
+func validateConfig(cfg *config.Config) error {
+	if err := mailer.Validate(&cfg.Email); err != nil {
+		return fmt.Errorf("email: %w", err)
+	}
+	return nil
+}
+
 // Initialize loads the app configuration and initializes templates, keys,
 // session, route handlers, and the database connection.
 func Initialize(apper Apper, debug bool) (*App, error) {
@@ -419,8 +429,13 @@ func Initialize(apper Apper, debug bool) (*App, error) {
 
 	apper.LoadConfig()
 
+	err := validateConfig(apper.App().Config())
+	if err != nil {
+		return nil, err
+	}
+
 	// Load templates
-	err := InitTemplates(apper.App().Config())
+	err = InitTemplates(apper.App().Config())
 	if err != nil {
 		return nil, fmt.Errorf("load templates: %s", err)
 	}

@@ -179,6 +179,7 @@ type (
 		Username       string `ini:"smtp_username"`
 		Password       string `ini:"smtp_password"`
 		EnableStartTLS bool   `ini:"smtp_enable_start_tls"`
+		EnableTLS      bool   `ini:"smtp_enable_tls"`
 
 		// Mailgun configuration values
 		Domain         string `ini:"domain"`

@@ -11,6 +11,8 @@
 package mailer
 
 import (
+	"crypto/tls"
+	"errors"
 	"fmt"
 	netmail "net/mail"
 	"strings"
@@ -57,26 +59,52 @@ func FormatAddress(name, address string) string {
 	return (&netmail.Address{Name: name, Address: address}).String()
 }
 
+// Validate reports a configuration error in the instance's config.EmailCfg,
+// so that it can be caught at startup rather than when the first email is
+// sent. Only settings of the SMTP provider are checked, and only when SMTP is
+// the provider in use.
+func Validate(eCfg *config.EmailCfg) error {
+	if usesMailgun(eCfg) {
+		return nil
+	}
+	if eCfg.EnableTLS && eCfg.EnableStartTLS {
+		return errors.New("smtp_enable_tls and smtp_enable_start_tls cannot both be set")
+	}
+	return nil
+}
+
+func usesMailgun(eCfg *config.EmailCfg) bool {
+	return eCfg.Domain != "" && eCfg.MailgunPrivate != ""
+}
+
 // New creates a new Mailer from the instance's config.EmailCfg, returning an error if not properly configured.
 func New(eCfg config.EmailCfg) (*Mailer, error) {
+	if err := Validate(&eCfg); err != nil {
+		return nil, err
+	}
 	m := &Mailer{}
-	if eCfg.Domain != "" && eCfg.MailgunPrivate != "" {
+	switch {
+	case usesMailgun(&eCfg):
 		m.mailGun = mailgun.NewMailgun(eCfg.Domain, eCfg.MailgunPrivate)
 		if eCfg.MailgunEurope {
 			m.mailGun.SetAPIBase("https://api.eu.mailgun.net/v3")
 		}
-	} else if eCfg.Username != "" && eCfg.Password != "" && eCfg.Host != "" && eCfg.Port > 0 {
+	case eCfg.Username != "" && eCfg.Password != "" && eCfg.Host != "" && eCfg.Port > 0:
 		m.smtp = mail.NewSMTPClient()
 		m.smtp.Host = eCfg.Host
 		m.smtp.Port = eCfg.Port
 		m.smtp.Username = eCfg.Username
 		m.smtp.Password = eCfg.Password
-		if eCfg.EnableStartTLS {
+		if eCfg.EnableTLS || (eCfg.Port == 465 && !eCfg.EnableStartTLS) {
+			// Implicit TLS: the connection is encrypted from the first byte.
+			m.smtp.Encryption = mail.EncryptionSSLTLS
+			m.smtp.TLSConfig = &tls.Config{ServerName: eCfg.Host, MinVersion: tls.VersionTLS12}
+		} else if eCfg.EnableStartTLS {
 			m.smtp.Encryption = mail.EncryptionSTARTTLS
 		}
 		// To allow sending multiple email
 		m.smtp.KeepAlive = true
-	} else {
+	default:
 		return nil, fmt.Errorf("no email provider is configured")
 	}
 
