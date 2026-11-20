@@ -11,10 +11,12 @@
 package writefreely
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"runtime/debug"
 
 	"github.com/writeas/web-core/activitypub"
@@ -45,20 +47,23 @@ func generateActorKeys() (pubPEM, privPEM []byte, err error) {
 
 // actorKeysUsable reports whether both PEM-encoded keys decode.
 func actorKeysUsable(pub, priv []byte) bool {
-	// Check for a PEM block first, since the decoders expect one.
-	if b, _ := pem.Decode(pub); b == nil {
-		return false
-	}
-	if b, _ := pem.Decode(priv); b == nil {
-		return false
-	}
 	if _, err := activitypub.DecodePublicKey(pub); err != nil {
 		return false
 	}
-	if _, err := activitypub.DecodePrivateKey(priv); err != nil {
+	if _, err := decodeActorPrivateKey(priv); err != nil {
 		return false
 	}
 	return true
+}
+
+// decodeActorPrivateKey decodes an actor's PEM-encoded private key. It
+// returns an error when priv holds no PEM block, as when the actor's keys
+// couldn't be read, since activitypub.DecodePrivateKey expects one.
+func decodeActorPrivateKey(priv []byte) (crypto.PrivateKey, error) {
+	if b, _ := pem.Decode(priv); b == nil {
+		return nil, errors.New("no PEM-encoded private key")
+	}
+	return activitypub.DecodePrivateKey(priv)
 }
 
 // goSafeRecoveredHook, if set, is called after goSafe recovers from a panic.
