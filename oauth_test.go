@@ -217,7 +217,17 @@ func TestViewOauthInit(t *testing.T) {
 
 func TestViewOauthCallback(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		app := &MockOAuthDatastoreProvider{}
+		// The remote account is already linked to a local user, so the
+		// callback signs that user in.
+		app := &MockOAuthDatastoreProvider{
+			DoDB: func() OAuthDatastore {
+				return &MockOAuthDatastore{
+					DoGetIDForRemoteUser: func(context.Context, string, string, string) (int64, error) {
+						return 1, nil
+					},
+				}
+			},
+		}
 		h := oauthHandler{
 			Config:   app.Config(),
 			DB:       app.DB(),
@@ -258,5 +268,6 @@ func TestViewOauthCallback(t *testing.T) {
 		err = h.viewOauthCallback(&App{cfg: app.Config(), sessionStore: app.SessionStore()}, rr, req)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusTemporaryRedirect, rr.Code)
+		assert.Equal(t, "/", rr.Header().Get("Location"))
 	})
 }
