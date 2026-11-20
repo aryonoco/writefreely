@@ -349,7 +349,7 @@ func handleRenderMarkdown(app *App, w http.ResponseWriter, r *http.Request) erro
 		RawBody       string `json:"raw_body"`
 	}{}
 
-	err := decodeJSONBody(w, r, markdownBodyLimit, &in)
+	err := decodeJSONBody(w, r, requestBodyLimit, &in)
 	if errors.Is(err, ErrBodyTooLarge) {
 		return err
 	}

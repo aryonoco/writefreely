@@ -54,6 +54,9 @@ func InitRoutes(apper Apper, r *mux.Router) *mux.Router {
 		log.Info("Adding %s routes (multi-user)...", hostSubroute)
 	}
 
+	// Every request body is limited before anything reads it, the CSRF
+	// check included, so this goes first
+	r.Use(limitRequestBodies)
 	// Every route requires a CSRF token on writes made with the session
 	r.Use(csrfMiddleware(apper))
 
