@@ -149,8 +149,9 @@ func (sig *inboxSignature) verify(app *App, r *http.Request, body []byte) (strin
 	if !ok {
 		return "", fmt.Errorf("%w: [app] host has no host name", errBadSignature)
 	}
-	// hs2019 leaves the algorithm to the key, and the key is RSA
-	if sig.algorithm != "rsa-sha256" && sig.algorithm != "hs2019" {
+	// hs2019 leaves the algorithm to the key, and the key is RSA; a header
+	// without an algorithm is read as hs2019
+	if sig.algorithm != "" && sig.algorithm != "rsa-sha256" && sig.algorithm != "hs2019" {
 		return "", fmt.Errorf("%w: algorithm is not rsa-sha256", errBadSignature)
 	}
 	for _, h := range inboxSignedHeaders {
@@ -283,7 +284,8 @@ func storedInboxKey(ctx context.Context, app *App, keyID string) (inboxKey, bool
 }
 
 // fetchInboxKey fetches the actor document at keyActor and returns the key
-// it lists under keyID, with that key's owner. The owner must be on the
+// it lists under keyID (or under keyID plus a fragment when keyID is the
+// actor's own IRI), with that key's owner. The owner must be on the
 // key's host.
 func fetchInboxKey(app *App, keyID, keyActor string) (inboxKey, error) {
 	actor, err := fetchRemoteActor(app, keyActor)
@@ -294,7 +296,9 @@ func fetchInboxKey(app *App, keyID, keyActor string) (inboxKey, error) {
 		}
 		return inboxKey{}, fmt.Errorf("%w: key not fetched: %w", errBadSignature, err)
 	}
-	if actor.PublicKey.ID != keyID {
+	// A keyId that is the actor's own IRI names the key the actor lists
+	// under that IRI plus a fragment
+	if actor.PublicKey.ID != keyID && (keyID != actor.ID || !strings.HasPrefix(actor.PublicKey.ID, keyID+"#")) {
 		return inboxKey{}, fmt.Errorf("%w: key not listed by %s", errBadSignature, keyActor)
 	}
 	owner := actor.PublicKey.Owner
