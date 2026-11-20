@@ -13,7 +13,7 @@ package writefreely
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -90,8 +90,10 @@ func handleCreateEmailSubscription(app *App, w http.ResponseWriter, r *http.Requ
 	}
 	if reqJSON {
 		// Decode JSON request
-		decoder := json.NewDecoder(r.Body)
-		err = decoder.Decode(&ss)
+		err = decodeJSONBody(w, r, formBodyLimit, &ss)
+		if errors.Is(err, ErrBodyTooLarge) {
+			return err
+		}
 		if err != nil {
 			log.Error("Couldn't parse new subscription JSON request: %v\n", err)
 			return ErrBadJSON

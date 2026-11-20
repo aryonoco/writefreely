@@ -21,6 +21,7 @@ var (
 	ErrBadFormData    = impart.HTTPError{http.StatusBadRequest, "Expected valid form data."}
 	ErrBadJSON        = impart.HTTPError{http.StatusBadRequest, "Expected valid JSON object."}
 	ErrBadJSONArray   = impart.HTTPError{http.StatusBadRequest, "Expected valid JSON array."}
+	ErrBodyTooLarge   = impart.HTTPError{Status: http.StatusRequestEntityTooLarge, Message: "The request body is too large."}
 	ErrBadAccessToken = impart.HTTPError{http.StatusUnauthorized, "Invalid access token."}
 	ErrNoAccessToken  = impart.HTTPError{http.StatusBadRequest, "Authorization token required."}
 	ErrNotLoggedIn    = impart.HTTPError{http.StatusUnauthorized, "Not logged in."}

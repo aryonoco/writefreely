@@ -46,6 +46,25 @@ func startTestServer(t *testing.T, h http.Handler) (srv *http.Server, base strin
 	return srv, "http://" + ln.Addr().String()
 }
 
+func TestNewHTTPServerTimeouts(t *testing.T) {
+	t.Parallel()
+	s := newHTTPServer("localhost:8080", http.NotFoundHandler())
+
+	if s.Addr != "localhost:8080" || s.Handler == nil {
+		t.Errorf("Addr = %q and Handler = %v, want localhost:8080 and the handler given", s.Addr, s.Handler)
+	}
+	if s.ReadHeaderTimeout != 10*time.Second {
+		t.Errorf("ReadHeaderTimeout = %s, want 10s", s.ReadHeaderTimeout)
+	}
+	if s.IdleTimeout != 120*time.Second {
+		t.Errorf("IdleTimeout = %s, want 2m0s", s.IdleTimeout)
+	}
+	// Uploads and responses may take long on a slow connection.
+	if s.ReadTimeout != 0 || s.WriteTimeout != 0 {
+		t.Errorf("ReadTimeout = %s and WriteTimeout = %s, want neither set", s.ReadTimeout, s.WriteTimeout)
+	}
+}
+
 func TestDrainFinishesInFlight(t *testing.T) {
 	t.Parallel()
 	started := make(chan struct{})

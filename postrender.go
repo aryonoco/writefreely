@@ -12,7 +12,7 @@ package writefreely
 
 import (
 	"bytes"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"html"
 	"html/template"
@@ -349,8 +349,10 @@ func handleRenderMarkdown(app *App, w http.ResponseWriter, r *http.Request) erro
 		RawBody       string `json:"raw_body"`
 	}{}
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&in)
+	err := decodeJSONBody(w, r, markdownBodyLimit, &in)
+	if errors.Is(err, ErrBodyTooLarge) {
+		return err
+	}
 	if err != nil {
 		log.Error("Couldn't parse markdown JSON request: %v", err)
 		return ErrBadJSON

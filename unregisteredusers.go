@@ -12,7 +12,7 @@ package writefreely
 
 import (
 	"database/sql"
-	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/writeas/impart"
@@ -44,8 +44,12 @@ func handleWebSignup(app *App, w http.ResponseWriter, r *http.Request) error {
 	// Get params
 	var ur userRegistration
 	if reqJSON {
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&ur)
+		err := decodeJSONBody(w, r, formBodyLimit, &ur)
+		if errors.Is(err, ErrBodyTooLarge) {
+			// The signup form sends no JSON, so answer in JSON rather
+			// than with the form's error page.
+			return impart.WriteError(w, ErrBodyTooLarge)
+		}
 		if err != nil {
 			log.Error("Couldn't parse signup JSON request: %v\n", err)
 			return ErrBadJSON
@@ -101,8 +105,10 @@ func handleUsernameCheck(app *App, w http.ResponseWriter, r *http.Request) error
 		Username string `json:"username"`
 	}
 	if reqJSON {
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&d)
+		err := decodeJSONBody(w, r, formBodyLimit, &d)
+		if errors.Is(err, ErrBodyTooLarge) {
+			return err
+		}
 		if err != nil {
 			log.Error("Couldn't decode username check: %v\n", err)
 			return ErrBadFormData
