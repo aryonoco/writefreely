@@ -37,8 +37,10 @@ const (
 
 type (
 	SubmittedSubscription struct {
-		CollAlias string
-		UserID    int64
+		// CollAlias and UserID come from the route and the session, never from
+		// the request body.
+		CollAlias string `json:"-" schema:"-"`
+		UserID    int64  `json:"-" schema:"-"`
 
 		Email string `schema:"email" json:"email"`
 		Web   bool   `schema:"web" json:"web"`
