@@ -1,25 +1,27 @@
-const path = require('path')
+import { fileURLToPath } from "node:url";
+import TerserPlugin from "terser-webpack-plugin";
 
-module.exports = {
-	entry: {
-		entry: __dirname + '/prose.js'
-	},
-	output: {
-		filename: 'prose.bundle.js',
-		path: path.resolve('..', 'static', 'js'),
-	},
-	module: {
-		rules: [
-			{
-				test: /\.js$/,
-				exclude: /(nodue_modules|bower_components)/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						presets: ['@babel/preset-env']
-					}
-				}
-			}
-		]
-	}
-}
+export default {
+  entry: fileURLToPath(new URL("prose.js", import.meta.url)),
+  output: {
+    filename: "prose.bundle.js",
+    path: fileURLToPath(new URL("../static/js", import.meta.url)),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"],
+          },
+        },
+      },
+    ],
+  },
+  optimization: {
+    minimizer: [new TerserPlugin({ extractComments: false })],
+  },
+};

@@ -3,28 +3,30 @@
   "version": "1.0.0",
   "description": "",
   "main": "prose.js",
+  "type": "module",
   "dependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
-    "markdown-it": "^14.3.3",
-    "prosemirror-example-setup": "github:writefreely/prosemirror-example-setup",
-    "prosemirror-keymap": "^1.1.4",
-    "prosemirror-markdown": "github:writefreely/prosemirror-markdown",
-    "prosemirror-model": "^1.9.1",
-    "prosemirror-state": "^1.3.2",
-    "prosemirror-view": "^1.14.2",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11"
+    "markdown-it": "^15.0.3",
+    "prosemirror-example-setup": "^1.2.4",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-markdown": "^1.14.0",
+    "prosemirror-menu": "^1.3.2",
+    "prosemirror-model": "^1.25.13",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.43.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.7",
-    "@babel/preset-env": "^7.9.0",
-    "babel-loader": "^8.0.6",
-    "prettier": "^2.2.1"
+    "@babel/core": "^8.1.3",
+    "@babel/preset-env": "^8.0.7",
+    "babel-loader": "^10.1.1",
+    "prettier": "^3.10.1",
+    "terser-webpack-plugin": "^5.6.1",
+    "webpack": "^5.113.0",
+    "webpack-cli": "^7.3.1"
   },
   "scripts": {
-    "develop": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode development --watch",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode production"
+    "develop": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

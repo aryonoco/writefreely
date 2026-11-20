@@ -1,3 +1,3 @@
 all :
-	npm install
-	npm run-script build
+	npm ci --ignore-scripts
+	npm run build

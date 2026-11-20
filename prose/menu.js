@@ -2,7 +2,7 @@ import { MenuItem } from "prosemirror-menu";
 import { buildMenuItems } from "prosemirror-example-setup";
 import { NodeSelection } from "prosemirror-state";
 
-import { writeFreelySchema } from "./schema";
+import { writeFreelySchema } from "./schema.js";
 
 function canInsert(state, nodeType, attrs) {
   let $from = state.selection.$from;

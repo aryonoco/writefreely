@@ -1,7 +1,7 @@
 import { MarkdownParser } from "prosemirror-markdown";
 import markdownit from "markdown-it";
 
-import { writeFreelySchema } from "./schema";
+import { writeFreelySchema } from "./schema.js";
 
 const md = markdownit("commonmark", { html: true });
 
@@ -52,6 +52,14 @@ md.core.ruler.push("shortcodes", (state) => {
   }
 });
 
+// markdown-it hides the paragraphs inside a tight list's items. Record it, so
+// saving keeps a tight list tight and a loose one loose.
+function listIsTight(tokens, i) {
+  while (++i < tokens.length)
+    if (tokens[i].type !== "list_item_open") return tokens[i].hidden;
+  return false;
+}
+
 export const writeFreelyMarkdownParser = new MarkdownParser(
   writeFreelySchema,
   md,
@@ -62,7 +70,10 @@ export const writeFreelyMarkdownParser = new MarkdownParser(
     bullet_list: { block: "bullet_list" },
     ordered_list: {
       block: "ordered_list",
-      getAttrs: (tok) => ({ order: +tok.attrGet("start") || 1 }),
+      getAttrs: (tok, tokens, i) => ({
+        order: +tok.attrGet("start") || 1,
+        tight: listIsTight(tokens, i),
+      }),
     },
     heading: {
       block: "heading",
@@ -84,6 +95,9 @@ export const writeFreelyMarkdownParser = new MarkdownParser(
       }),
     },
     hardbreak: { node: "hard_break" },
+    // A single newline is a line break in a WriteFreely post, so keep it
+    // as one in the editor and when saving.
+    softbreak: { node: "hard_break" },
 
     em: { mark: "em" },
     strong: { mark: "strong" },
