@@ -504,6 +504,52 @@ func TestInboxRefetchesRotatedKey(t *testing.T) { //nolint:paralleltest // newFe
 	}
 }
 
+func TestInboxRefetchesStoredKeyOncePerInterval(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
+	app := newInboxTestApp(t)
+	actors := newInboxTestActors(t)
+	key, otherKey := inboxTestKey(t, 0), inboxTestKey(t, 1)
+	actors.set("a", &inboxTestActor{key: &key.PublicKey})
+	addInboxTestFollower(t, app, actors.iri("a"), actors.keyID("a"), &key.PublicKey)
+	now := time.Now()
+	app.inboxKeyRefetches().now = func() time.Time { return now }
+
+	verify := func(signingKey *rsa.PrivateKey) error {
+		body := inboxActivity(t, "Like", actors.iri("a"), inboxTestBlogIRI+"/posts/abc")
+		r := newInboxRequest(t, body)
+		signInboxRequest(t, r, body, actors.keyID("a"), signingKey)
+		_, err := verifyInboxRequest(app, r, body)
+		return err
+	}
+
+	// The stored key verifies neither, so the first fetches the actor again
+	// and the second, within the interval, doesn't
+	for i := range 2 {
+		if err := verify(otherKey); !errors.Is(err, errBadSignature) {
+			t.Fatalf("request %d with another key: verifyInboxRequest error = %v, want errBadSignature", i+1, err)
+		}
+	}
+	if n := actors.gets.Load(); n != 1 {
+		t.Errorf("after two requests with another key, actor server got %d GETs, want 1", n)
+	}
+
+	// The stored key is still tried
+	if err := verify(key); err != nil {
+		t.Errorf("request with the stored key: verifyInboxRequest: %v", err)
+	}
+	if n := actors.gets.Load(); n != 1 {
+		t.Errorf("after a request with the stored key, actor server got %d GETs, want 1", n)
+	}
+
+	// Once the interval has passed, the actor is fetched again
+	now = now.Add(keyRefetchInterval)
+	if err := verify(otherKey); !errors.Is(err, errBadSignature) {
+		t.Fatalf("request with another key after the interval: verifyInboxRequest error = %v, want errBadSignature", err)
+	}
+	if n := actors.gets.Load(); n != 2 {
+		t.Errorf("after the interval, actor server got %d GETs, want 2", n)
+	}
+}
+
 func TestInboxDropsDeleteFromGoneActor(t *testing.T) { //nolint:paralleltest // newFetchTestApp and allowTestServerDial set package-level variables
 	app := newInboxTestApp(t)
 	actors := newInboxTestActors(t)

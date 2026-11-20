@@ -842,7 +842,7 @@ func makeActivityPost(hostName string, p *activitystreams.Person, url string, m 
 		defer resp.Body.Close()
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxDeliveryResponseSize))
 	if err != nil {
 		return err
 	}
@@ -890,7 +890,8 @@ func isPublicIRI(iri string) error {
 }
 
 // resolveIRI fetches url and returns the response body, with the URL that
-// served it, which differs from url when the server redirected.
+// served it, which differs from url when the server redirected. It refuses
+// a body larger than maxRemoteDocumentSize.
 func resolveIRI(hostName, url string) (body []byte, servedFrom string, err error) { //nolint:gocritic // importShadow: the parameter keeps its name; the url package is not used here
 	log.Info("GET %s", url)
 
@@ -935,16 +936,18 @@ func resolveIRI(hostName, url string) (body []byte, servedFrom string, err error
 		defer resp.Body.Close()
 	}
 
-	body, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, "", err
-	}
+	body, err = readRemoteDocument(resp.Body)
 	if debugging {
 		log.Info("Status  : %s", resp.Status)
 		log.Info("Response: %s", body)
 	}
+	// The status comes first, whatever the body: callers tell a gone
+	// actor by it
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, "", &remoteStatusError{IRI: url, StatusCode: resp.StatusCode}
+	}
+	if err != nil {
+		return nil, "", err
 	}
 
 	return body, resp.Request.URL.String(), nil

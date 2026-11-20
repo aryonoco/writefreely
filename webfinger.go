@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -285,7 +284,7 @@ func RemoteLookup(handle string) string {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := readRemoteDocument(resp.Body)
 	if err != nil {
 		log.Error("Error on webfinger response: %v", err)
 		return ""
