@@ -12,22 +12,125 @@ package writefreely
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/writeas/web-core/log"
 	"github.com/writefreely/go-gopher"
+	"github.com/writefreely/writefreely/config"
+	"golang.org/x/net/netutil"
 )
 
-func initGopher(apper Apper) {
-	handler := NewWFHandler(apper)
+const (
+	// gopherReadTimeout is how long a Gopher client has to send its selector.
+	gopherReadTimeout = 10 * time.Second
+	// gopherMaxConns is the most Gopher connections served at once.
+	gopherMaxConns = 64
+)
 
-	gopher.HandleFunc("/", handler.Gopher(handleGopher))
-	log.Info("Serving on gopher://localhost:%d", apper.App().Config().Server.GopherPort)
-	gopher.ListenAndServe(fmt.Sprintf(":%d", apper.App().Config().Server.GopherPort), nil)
+// gopherExchangeTimeout is how long a whole Gopher exchange may take, from
+// accepting the connection to sending the end of the answer. Only tests
+// change it.
+var gopherExchangeTimeout = 120 * time.Second
+
+// startGopher binds the Gopher port, then serves Gopher on it in the
+// background. It returns an error if the port cannot be bound.
+func startGopher(apper Apper) (net.Listener, error) {
+	port := apper.App().Config().Server.GopherPort
+	l, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", ":"+strconv.Itoa(port))
+	if err != nil {
+		return nil, fmt.Errorf("listen on gopher port %d: %w", port, err)
+	}
+	l = &gopherListener{
+		Listener:        netutil.LimitListener(l, gopherMaxConns),
+		exchangeTimeout: gopherExchangeTimeout,
+	}
+
+	handler := NewWFHandler(apper)
+	s := &gopher.Server{Handler: handler.Gopher(handleGopher)}
+	log.Info("Serving on gopher://localhost:%d", port)
+	go func() {
+		log.Error("gopher: %v", s.Serve(l))
+	}()
+	return l, nil
+}
+
+// gopherListener gives each connection it accepts a deadline for the whole
+// exchange and a shorter one for reading the selector, so that a client
+// that sends nothing, or stops reading the answer, gives up its place.
+type gopherListener struct {
+	net.Listener
+	exchangeTimeout time.Duration
+}
+
+func (l *gopherListener) Accept() (net.Conn, error) {
+	c, err := l.Listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	// These fail only on a closed connection, whose next read fails too;
+	// returning the error instead would stop the server.
+	now := time.Now()
+	_ = c.SetDeadline(now.Add(l.exchangeTimeout))
+	_ = c.SetReadDeadline(now.Add(gopherReadTimeout))
+	return &gopherConn{Conn: c}, nil
+}
+
+// gopherConn closes the connection as soon as a write to it fails, or runs
+// past the exchange deadline, so that the client gives up its place under
+// gopherMaxConns.
+type gopherConn struct {
+	net.Conn
+}
+
+func (c *gopherConn) Write(b []byte) (int, error) {
+	n, err := c.Conn.Write(b)
+	if err != nil {
+		_ = c.Close()
+	}
+	return n, err
+}
+
+// gopherAdvertisedPort returns the port that Gopher links point to:
+// gopher_advertised_port if it is set, or else gopher_port.
+func gopherAdvertisedPort(cfg *config.Config) int {
+	if cfg.Server.GopherAdvertisedPort > 0 {
+		return cfg.Server.GopherAdvertisedPort
+	}
+	return cfg.Server.GopherPort
+}
+
+// gopherHidden reports whether c stays off Gopher: a private or
+// password-protected blog is neither listed nor served there.
+func gopherHidden(c *Collection) bool {
+	return c.IsPrivate() || c.IsProtected()
+}
+
+// writeGopherText writes text as a Gopher text file (RFC 1436): every line
+// ends in CRLF, a line starting with "." gets another "." in front, and a
+// line holding a lone "." ends the file.
+func writeGopherText(w io.Writer, text string) error {
+	text = strings.TrimSuffix(strings.ReplaceAll(text, "\r\n", "\n"), "\n")
+	var b strings.Builder
+	if text != "" {
+		for line := range strings.SplitSeq(text, "\n") {
+			if strings.HasPrefix(line, ".") {
+				b.WriteString(".")
+			}
+			b.WriteString(line)
+			b.WriteString("\r\n")
+		}
+	}
+	b.WriteString(".\r\n")
+	_, err := io.WriteString(w, b.String())
+	return err
 }
 
 // Utility function to strip the URL from the hostname provided by app.cfg.App.Host
@@ -62,9 +165,12 @@ func handleGopher(app *App, w gopher.ResponseWriter, r *gopher.Request) error {
 	}
 
 	for _, c := range *colls {
+		if gopherHidden(&c) {
+			continue
+		}
 		w.WriteItem(&gopher.Item{
 			Host:        stripHostProtocol(app),
-			Port:        app.cfg.Server.GopherPort,
+			Port:        gopherAdvertisedPort(app.cfg),
 			Type:        gopher.DIRECTORY,
 			Description: c.DisplayTitle(),
 			Selector:    "/" + c.Alias + "/",
@@ -104,6 +210,9 @@ func handleGopherCollection(app *App, w gopher.ResponseWriter, r *gopher.Request
 		}
 		baseSel = "/" + c.Alias + "/"
 	}
+	if gopherHidden(c) {
+		return ErrCollectionNotFound
+	}
 	c.hostName = app.cfg.App.Host
 
 	w.WriteInfo(c.DisplayTitle())
@@ -118,7 +227,7 @@ func handleGopherCollection(app *App, w gopher.ResponseWriter, r *gopher.Request
 
 	for _, p := range *posts {
 		w.WriteItem(&gopher.Item{
-			Port:        app.cfg.Server.GopherPort,
+			Port:        gopherAdvertisedPort(app.cfg),
 			Host:        stripHostProtocol(app),
 			Type:        gopher.FILE,
 			Description: p.CreatedDate() + " - " + p.DisplayTitle(),
@@ -148,6 +257,9 @@ func handleGopherCollectionPost(app *App, w gopher.ResponseWriter, r *gopher.Req
 			return err
 		}
 	}
+	if gopherHidden(c) {
+		return ErrCollectionNotFound
+	}
 	c.hostName = app.cfg.App.Host
 
 	p, err := app.db.GetPost(slug, c.ID)
@@ -161,7 +273,9 @@ func handleGopherCollectionPost(app *App, w gopher.ResponseWriter, r *gopher.Req
 	}
 	b.WriteString(p.DisplayDate + "\n\n")
 	b.WriteString(p.Content)
-	io.Copy(w, &b)
+	if err := writeGopherText(w, b.String()); err != nil {
+		return err
+	}
 
 	return w.End()
 }

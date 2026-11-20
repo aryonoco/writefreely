@@ -479,7 +479,10 @@ func Serve(app *App, r *mux.Router) {
 
 	// Start gopher server
 	if app.cfg.Server.GopherPort > 0 && !app.cfg.App.Private {
-		go initGopher(app)
+		if _, err := startGopher(app); err != nil {
+			log.Error("Unable to start gopher server: %v", err)
+			os.Exit(1)
+		}
 	}
 
 	// Start web application server
