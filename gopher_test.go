@@ -478,3 +478,119 @@ func TestGopherExchangeDeadline(t *testing.T) {
 		gopherRequest(t, c, "")
 	}
 }
+
+func TestGopherHidesSilencedBlog(t *testing.T) {
+	t.Parallel()
+
+	app := newGopherTestApp(t, func(cfg *config.Config) {
+		cfg.App.SingleUser = false
+	})
+	createGopherTestBlog(t, app, "openblog", CollPublic, "Open post", "Anyone may read this.")
+	slug := createGopherTestBlog(t, app, "mutedblog", CollPublic, "Muted post", "Its owner is silenced.").Slug.String
+	addr := startTestGopher(t, app)
+
+	missing := gopherFetch(t, addr, "/nosuchblog/")
+	if !strings.HasPrefix(missing, "3") {
+		t.Fatalf("a missing blog answers %q, not an error item", missing)
+	}
+	for _, sel := range []string{"/mutedblog/", "/mutedblog/" + slug} {
+		if got := gopherFetch(t, addr, sel); !strings.Contains(got, "Muted post") {
+			t.Fatalf("%s is not served before the owner is silenced:\n%s", sel, got)
+		}
+	}
+
+	_, err := app.db.ExecContext(t.Context(), "UPDATE users SET status = ? WHERE username = ?", UserSilenced, "mutedblog")
+	if err != nil {
+		t.Fatalf("silence the owner: %v", err)
+	}
+
+	root := gopherFetch(t, addr, "")
+	if !strings.Contains(root, "/openblog/") {
+		t.Errorf("root menu does not list the public blog:\n%s", root)
+	}
+	if strings.Contains(root, "mutedblog") {
+		t.Errorf("root menu lists the silenced owner's blog:\n%s", root)
+	}
+	for _, sel := range []string{"/mutedblog/", "/mutedblog/" + slug} {
+		got := gopherFetch(t, addr, sel)
+		if strings.Contains(got, "Muted post") || strings.Contains(got, "Its owner is silenced.") {
+			t.Errorf("%s serves the silenced owner's blog:\n%s", sel, got)
+		}
+		if got != missing {
+			t.Errorf("%s answers %q, not the error item a missing blog gets (%q)", sel, got, missing)
+		}
+	}
+}
+
+func TestGopherSilencedBlogSingleUser(t *testing.T) {
+	t.Parallel()
+
+	app := newGopherTestApp(t, func(cfg *config.Config) {
+		cfg.App.SingleUser = true
+	})
+	slug := createGopherTestBlog(t, app, "gophertest", CollPublic, "Hello", "A public post.").Slug.String
+	addr := startTestGopher(t, app)
+
+	_, err := app.db.ExecContext(t.Context(), "UPDATE users SET status = ?", UserSilenced)
+	if err != nil {
+		t.Fatalf("silence the owner: %v", err)
+	}
+	for _, sel := range []string{"", "/" + slug} {
+		got := gopherFetch(t, addr, sel)
+		if !strings.HasPrefix(got, "3") || strings.Contains(got, "Hello") {
+			t.Errorf("%q answers %q, not an error item", sel, got)
+		}
+	}
+}
+
+func TestGopherServesNothingWhilePrivate(t *testing.T) {
+	t.Parallel()
+
+	for _, single := range []bool{false, true} {
+		t.Run(strconv.FormatBool(single), func(t *testing.T) {
+			t.Parallel()
+
+			app := newGopherTestApp(t, func(cfg *config.Config) {
+				cfg.App.SingleUser = single
+			})
+			slug := createGopherTestBlog(t, app, "openblog", CollPublic, "Open post", "Anyone may read this.").Slug.String
+			addr := startTestGopher(t, app)
+
+			selectors := []string{"", "/openblog/", "/openblog/" + slug, "/nosuchblog/"}
+			if single {
+				selectors = []string{"", "/" + slug, "/nosuchpost"}
+			}
+			served := make(map[string]string)
+			for _, sel := range selectors {
+				served[sel] = gopherFetch(t, addr, sel)
+			}
+
+			// The admin panel replaces the running config by assignment
+			private := *app.Config()
+			private.App.Private = true
+			app.SetConfig(&private)
+
+			wantErr := ""
+			for _, sel := range selectors {
+				got := gopherFetch(t, addr, sel)
+				if !strings.HasPrefix(got, "3") || strings.Contains(got, "Open post") || strings.Contains(got, "Anyone may read this.") {
+					t.Errorf("%q answers %q while private, not an error item", sel, got)
+				}
+				if wantErr == "" {
+					wantErr = got
+				} else if got != wantErr {
+					t.Errorf("%q answers %q, not the same item as the others (%q)", sel, got, wantErr)
+				}
+			}
+
+			public := private
+			public.App.Private = false
+			app.SetConfig(&public)
+			for _, sel := range selectors {
+				if got := gopherFetch(t, addr, sel); got != served[sel] {
+					t.Errorf("%q answers %q after Private is off again, want %q", sel, got, served[sel])
+				}
+			}
+		})
+	}
+}

@@ -108,9 +108,13 @@ func gopherAdvertisedPort(cfg *config.Config) int {
 }
 
 // gopherHidden reports whether c stays off Gopher: a private or
-// password-protected blog is neither listed nor served there.
-func gopherHidden(c *Collection) bool {
-	return c.IsPrivate() || c.IsProtected()
+// password-protected blog is neither listed nor served there, nor is the
+// blog of a silenced user.
+func gopherHidden(app *App, c *Collection) (bool, error) {
+	if c.IsPrivate() || c.IsProtected() {
+		return true, nil
+	}
+	return app.db.IsUserSilenced(c.OwnerID)
 }
 
 // writeGopherText writes text as a Gopher text file (RFC 1436): every line
@@ -144,6 +148,12 @@ func stripHostProtocol(app *App) string {
 }
 
 func handleGopher(app *App, w gopher.ResponseWriter, r *gopher.Request) error {
+	// The running config can be replaced while Gopher is up, so ask it
+	// for every request
+	if app.cfg.App.Private {
+		return ErrCollectionNotFound
+	}
+
 	parts := strings.Split(r.Selector, "/")
 	if app.cfg.App.SingleUser {
 		if parts[1] != "" {
@@ -165,7 +175,7 @@ func handleGopher(app *App, w gopher.ResponseWriter, r *gopher.Request) error {
 	}
 
 	for _, c := range *colls {
-		if gopherHidden(&c) {
+		if c.IsPrivate() || c.IsProtected() {
 			continue
 		}
 		w.WriteItem(&gopher.Item{
@@ -210,7 +220,11 @@ func handleGopherCollection(app *App, w gopher.ResponseWriter, r *gopher.Request
 		}
 		baseSel = "/" + c.Alias + "/"
 	}
-	if gopherHidden(c) {
+	hidden, err := gopherHidden(app, c)
+	if err != nil {
+		return err
+	}
+	if hidden {
 		return ErrCollectionNotFound
 	}
 	c.hostName = app.cfg.App.Host
@@ -257,7 +271,11 @@ func handleGopherCollectionPost(app *App, w gopher.ResponseWriter, r *gopher.Req
 			return err
 		}
 	}
-	if gopherHidden(c) {
+	hidden, err := gopherHidden(app, c)
+	if err != nil {
+		return err
+	}
+	if hidden {
 		return ErrCollectionNotFound
 	}
 	c.hostName = app.cfg.App.Host
