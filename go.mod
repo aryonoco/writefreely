@@ -13,7 +13,6 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/go-test/deep v1.0.1 // indirect
 	github.com/gobuffalo/envy v1.9.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/gorilla/csrf v1.7.3
 	github.com/gorilla/feeds v1.1.2
 	github.com/gorilla/mux v1.8.1
@@ -33,12 +32,9 @@ require (
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/onsi/gomega v1.13.0 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/smartystreets/assertions v0.0.0-20190116191733-b6c0e53d7304 // indirect
-	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/writeas/activity v0.1.2
-	github.com/writeas/activityserve v0.0.0-20230428180247-dc13a4f4d835
 	github.com/writeas/go-strip-markdown/v2 v2.1.1
 	github.com/writeas/go-webfinger v1.1.0
 	github.com/writeas/httpsig v1.0.0
@@ -64,17 +60,13 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/go-fed/httpsig v0.1.1-0.20200204213531-0ef28562fabe // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
-	github.com/gologme/log v1.2.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
-	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
@@ -91,7 +83,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
-	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

@@ -127,6 +127,20 @@ var safeWebfingerHTTPClient = &http.Client{
 	},
 }
 
+// dialAllowedForTest, when set, reports whether addr ("host:port") may be
+// dialed although the address check refuses its host. It lets tests reach
+// a local test server: it is nil in production and only tests set it.
+var dialAllowedForTest func(addr string) bool
+
+// remoteAddrAllowed reports whether a connection to ip on port passes the
+// address check.
+func remoteAddrAllowed(ip net.IP, port string) bool {
+	if isPublicAddr(ip) {
+		return true
+	}
+	return dialAllowedForTest != nil && dialAllowedForTest(net.JoinHostPort(ip.String(), port))
+}
+
 func safeDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -138,7 +152,7 @@ func safeDialContext(ctx context.Context, network, addr string) (net.Conn, error
 	}
 	var lastErr error
 	for _, ip := range ips {
-		if !isPublicAddr(ip.IP) {
+		if !remoteAddrAllowed(ip.IP, port) {
 			lastErr = fmt.Errorf("%w: %s", errBlockedRemoteAddr, ip.IP)
 			continue
 		}
@@ -176,6 +190,11 @@ func isPublicAddr(ip net.IP) bool {
 		if ip4[0] == 100 && ip4[1]&0xc0 == 64 {
 			return false
 		}
+		for _, n := range reservedIPv4Nets {
+			if n.Contains(ip4) {
+				return false
+			}
+		}
 	}
 	// Extract any embedded IPv4 and re-run the same checks against it. The
 	// recursion terminates because embeddedIPv4 only returns a To4() address,
@@ -186,6 +205,28 @@ func isPublicAddr(ip net.IP) bool {
 		}
 	}
 	return true
+}
+
+// reservedIPv4Nets are the IPv4 ranges set aside for documentation
+// (RFC 5737) and for benchmarking (RFC 2544). No public server is
+// reachable at them.
+var reservedIPv4Nets = mustParseCIDRs(
+	"192.0.2.0/24",
+	"198.51.100.0/24",
+	"203.0.113.0/24",
+	"198.18.0.0/15",
+)
+
+func mustParseCIDRs(cidrs ...string) []*net.IPNet {
+	nets := make([]*net.IPNet, 0, len(cidrs))
+	for _, c := range cidrs {
+		_, n, err := net.ParseCIDR(c)
+		if err != nil {
+			panic(err)
+		}
+		nets = append(nets, n)
+	}
+	return nets
 }
 
 // embeddedIPv4 returns the IPv4 address encoded inside an IPv6 transition

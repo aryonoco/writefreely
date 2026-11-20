@@ -12,6 +12,7 @@ package writefreely
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
@@ -31,7 +32,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/writeas/activity/streams"
-	"github.com/writeas/activityserve"
 	"github.com/writeas/httpsig"
 	"github.com/writeas/impart"
 	"github.com/writeas/web-core/activitypub"
@@ -833,12 +833,19 @@ func isPublicIRI(iri string) error {
 	if host == "" {
 		return fmt.Errorf("missing host in IRI")
 	}
+	port := u.Port()
+	if port == "" {
+		port = "80"
+		if u.Scheme == "https" {
+			port = "443"
+		}
+	}
 	ips, err := net.LookupIP(host)
 	if err != nil {
 		return fmt.Errorf("unable to resolve host %q: %v", host, err)
 	}
 	for _, ip := range ips {
-		if !isPublicAddr(ip) {
+		if !remoteAddrAllowed(ip, port) {
 			return fmt.Errorf("host %q resolves to disallowed address %s", host, ip)
 		}
 	}
@@ -1178,31 +1185,33 @@ func GetProfileURLFromHandle(app *App, handle string) (string, error) {
 		} else {
 			// this probably means we don't have the user in the table so let's try to insert it
 			// here we need to ask the server for the inboxes
-			remoteActor, err := activityserve.NewRemoteActor(actorIRI)
+			remoteActor, err := fetchRemoteActor(app, actorIRI)
 			if err != nil {
 				log.Error("Couldn't fetch remote actor: %v", err)
+				remoteActor = &activitystreams.Person{}
 			}
+			sharedInbox := sharedInboxOrInbox(remoteActor)
 			if debugging {
-				log.Info("Got remote actor: %s %s %s %s %s", actorIRI, remoteActor.GetInbox(), remoteActor.GetSharedInbox(), remoteActor.URL(), handle)
+				log.Info("Got remote actor: %s %s %s %s %s", actorIRI, remoteActor.Inbox, sharedInbox, remoteActor.URL, handle)
 			}
-			_, err = app.db.Exec("INSERT INTO remoteusers (actor_id, inbox, shared_inbox, url, handle) VALUES(?, ?, ?, ?, ?)", actorIRI, remoteActor.GetInbox(), remoteActor.GetSharedInbox(), remoteActor.URL(), handle)
+			_, err = app.db.ExecContext(context.Background(), "INSERT INTO remoteusers (actor_id, inbox, shared_inbox, url, handle) VALUES(?, ?, ?, ?, ?)", actorIRI, remoteActor.Inbox, sharedInbox, remoteActor.URL, handle)
 			if err != nil {
 				log.Error("Couldn't insert remote user: %v", err)
 				return "", err
 			}
-			actorIRI = remoteActor.URL()
+			actorIRI = remoteActor.URL
 		}
 	} else if remoteUser.URL == "" {
 		log.Info("Remote user %s URL empty, fetching", remoteUser.ActorID)
-		newRemoteActor, err := activityserve.NewRemoteActor(remoteUser.ActorID)
+		newRemoteActor, err := fetchRemoteActor(app, remoteUser.ActorID)
 		if err != nil {
 			log.Error("Couldn't fetch remote actor: %v", err)
 		} else {
-			_, err := app.db.Exec("UPDATE remoteusers SET url = ? WHERE actor_id = ?", newRemoteActor.URL(), remoteUser.ActorID)
+			_, err := app.db.ExecContext(context.Background(), "UPDATE remoteusers SET url = ? WHERE actor_id = ?", newRemoteActor.URL, remoteUser.ActorID)
 			if err != nil {
 				log.Error("Couldn't update handle '%s' for user %s", handle, actorIRI)
 			} else {
-				actorIRI = newRemoteActor.URL()
+				actorIRI = newRemoteActor.URL
 			}
 		}
 	} else {
@@ -1216,14 +1225,17 @@ func GetProfileURLFromHandle(app *App, handle string) (string, error) {
 //
 // some implementations return different context field types
 // this converts any non-slice contexts into a slice
+//
+// Some also send url as a Link object or an array, or icon as an array.
+// These are reduced to the single value Person holds.
 func unmarshalActor(actorResp []byte, actor *activitystreams.Person) error {
-	// FIXME: Hubzilla has an object for the Actor's url: cannot unmarshal object into Go struct field Person.url of type string
-
-	// flexActor overrides the Context field to allow
+	// flexActor overrides the Context, URL and Icon fields to allow
 	// all valid representations during unmarshal
 	flexActor := struct {
 		activitystreams.Person
 		Context json.RawMessage `json:"@context,omitempty"`
+		URL     json.RawMessage `json:"url,omitempty"`
+		Icon    json.RawMessage `json:"icon,omitempty"`
 	}{}
 	if err := json.Unmarshal(actorResp, &flexActor); err != nil {
 		return err
@@ -1233,7 +1245,7 @@ func unmarshalActor(actorResp []byte, actor *activitystreams.Person) error {
 	actor.Followers = flexActor.Followers
 	actor.Following = flexActor.Following
 	actor.ID = flexActor.ID
-	actor.Icon = flexActor.Icon
+	actor.Icon = flexImage(flexActor.Icon)
 	actor.Inbox = flexActor.Inbox
 	actor.Name = flexActor.Name
 	actor.Outbox = flexActor.Outbox
@@ -1241,7 +1253,7 @@ func unmarshalActor(actorResp []byte, actor *activitystreams.Person) error {
 	actor.PublicKey = flexActor.PublicKey
 	actor.Summary = flexActor.Summary
 	actor.Type = flexActor.Type
-	actor.URL = flexActor.URL
+	actor.URL = flexHref(flexActor.URL)
 
 	func(val interface{}) {
 		switch val.(type) {
@@ -1254,6 +1266,54 @@ func unmarshalActor(actorResp []byte, actor *activitystreams.Person) error {
 	}(flexActor.Context)
 
 	return nil
+}
+
+// flexHref returns the URL in an ActivityStreams url value: a string, a
+// Link object's href, or the first element of an array, read as either of
+// those. Anything else, a nested array included, gives "".
+func flexHref(raw json.RawMessage) string {
+	if href, ok := linkHref(raw); ok {
+		return href
+	}
+	var list []json.RawMessage
+	if json.Unmarshal(raw, &list) == nil && len(list) > 0 {
+		href, _ := linkHref(list[0])
+		return href
+	}
+	return ""
+}
+
+// linkHref reads raw as a string or as a Link object's href.
+func linkHref(raw json.RawMessage) (string, bool) {
+	var s string
+	if json.Unmarshal(raw, &s) == nil {
+		return s, true
+	}
+	var link struct {
+		Href string `json:"href"`
+	}
+	if json.Unmarshal(raw, &link) == nil {
+		return link.Href, true
+	}
+	return "", false
+}
+
+// flexImage returns the image in an ActivityStreams icon value: an Image
+// object, or the first element of an array, read as an Image. Anything
+// else, a nested array included, gives an empty Image.
+func flexImage(raw json.RawMessage) activitystreams.Image {
+	var img activitystreams.Image
+	if json.Unmarshal(raw, &img) == nil {
+		return img
+	}
+	var list []json.RawMessage
+	if json.Unmarshal(raw, &list) == nil && len(list) > 0 {
+		img = activitystreams.Image{}
+		if json.Unmarshal(list[0], &img) == nil {
+			return img
+		}
+	}
+	return activitystreams.Image{}
 }
 
 func parsePostIDFromURL(app *App, u *url.URL) (string, error) {
