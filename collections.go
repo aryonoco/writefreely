@@ -1004,7 +1004,7 @@ func handleViewCollection(app *App, w http.ResponseWriter, r *http.Request) erro
 	}
 
 	// Update collection view count
-	go func() {
+	goSafe("update collection view count", func() {
 		// Don't update if owner is viewing the collection.
 		if u != nil && u.ID == coll.OwnerID {
 			return
@@ -1018,7 +1018,7 @@ func handleViewCollection(app *App, w http.ResponseWriter, r *http.Request) erro
 		if err != nil {
 			log.Error("Unable to update collections count: %v", err)
 		}
-	}()
+	})
 
 	return err
 }

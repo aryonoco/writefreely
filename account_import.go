@@ -166,17 +166,19 @@ func handleImport(app *App, u *User, w http.ResponseWriter, r *http.Request) err
 
 		// Federate post, if necessary
 		if app.cfg.App.Federation && coll.ID > 0 {
-			go federatePost(
-				app,
-				&PublicPost{
-					Post: rp,
-					Collection: &CollectionObj{
-						Collection: *coll,
+			goSafe("federate imported post", func() {
+				_ = federatePost(
+					app,
+					&PublicPost{
+						Post: rp,
+						Collection: &CollectionObj{
+							Collection: *coll,
+						},
 					},
-				},
-				coll.ID,
-				false,
-			)
+					coll.ID,
+					false,
+				)
+			})
 		}
 		filesImported++
 	}
