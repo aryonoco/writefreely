@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"text/tabwriter"
 	"time"
@@ -80,6 +81,10 @@ type App struct {
 	updates      *updatesCache
 
 	timeline *localTimeline
+
+	loginLimitOnce sync.Once
+	loginLimit     *loginLimiter
+	trustedProxies proxyList
 }
 
 // DB returns the App's datastore
@@ -408,6 +413,9 @@ func validateConfig(cfg *config.Config) error {
 	if err := mailer.Validate(&cfg.Email); err != nil {
 		return fmt.Errorf("email: %w", err)
 	}
+	if _, err := parseTrustedProxies(cfg.Server.TrustedProxies); err != nil {
+		return fmt.Errorf("[server] trusted_proxies: %w", err)
+	}
 	return nil
 }
 
@@ -433,6 +441,8 @@ func Initialize(apper Apper, debug bool) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	// validateConfig has checked the list, so parsing it can't fail here
+	apper.App().trustedProxies, _ = parseTrustedProxies(apper.App().cfg.Server.TrustedProxies)
 
 	// Load templates
 	err = InitTemplates(apper.App().Config())

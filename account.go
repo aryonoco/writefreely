@@ -12,6 +12,7 @@ package writefreely
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -79,10 +80,6 @@ func canUserInvite(cfg *config.Config, isAdmin bool) bool {
 func (up *UserPage) SetMessaging(u *User) {
 	// up.NeedsAuth = app.db.DoesUserNeedAuth(u.ID)
 }
-
-const (
-	loginAttemptExpiration = 3 * time.Second
-)
 
 var actuallyUsernameReg = regexp.MustCompile("username is actually ([a-z0-9\\-]+)\\. Please try that, instead")
 
@@ -400,7 +397,9 @@ func webLogin(app *App, w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-var loginAttemptUsers = sync.Map{}
+// errBadLogin is the one answer to an unknown username and to a wrong
+// password.
+var errBadLogin = impart.HTTPError{Status: http.StatusUnauthorized, Message: "Incorrect username or password."}
 
 func login(app *App, w http.ResponseWriter, r *http.Request) error {
 	reqJSON := IsJSON(r)
@@ -484,35 +483,24 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 			return impart.HTTPError{http.StatusBadRequest, msg}
 		}
 
-		// Prevent excessive login attempts on the same account
+		// Limit login attempts per client address
 		// Skip this check in dev environment
-		if !app.cfg.Server.Dev {
-			now := time.Now()
-			attemptExp, att := loginAttemptUsers.LoadOrStore(signin.Alias, now.Add(loginAttemptExpiration))
-			if att {
-				if attemptExpTime, ok := attemptExp.(time.Time); ok {
-					if attemptExpTime.After(now) {
-						// This user attempted previously, and the period hasn't expired yet
-						return impart.HTTPError{http.StatusTooManyRequests, "You're doing that too much."}
-					} else {
-						// This user attempted previously, but the time expired; free up space
-						loginAttemptUsers.Delete(signin.Alias)
-					}
-				} else {
-					log.Error("Unable to cast expiration to time")
-				}
-			}
+		addr := clientAddr(r, app.trustedProxies)
+		limiter := app.loginAttempts()
+		if !app.cfg.Server.Dev && !limiter.allow(addr, time.Now()) {
+			return impart.HTTPError{Status: http.StatusTooManyRequests, Message: "You're doing that too much."}
 		}
 
 		// Retrieve password
 		u, err = app.db.GetUserForAuth(signin.Alias)
 		if err != nil {
 			log.Info("Unable to getUserForAuth on %s: %v", signin.Alias, err)
-			if strings.IndexAny(signin.Alias, "@") > 0 {
-				log.Info("Suggesting: %s", ErrUserNotFoundEmail.Message)
-				return ErrUserNotFoundEmail
+			if !errors.Is(err, ErrUserNotFound) {
+				return err
 			}
-			return err
+			// Take as long, and answer the same, as for a wrong password
+			auth.Authenticated([]byte(unknownUserHash), []byte(signin.Pass))
+			return errBadLogin
 		}
 		// Authenticate
 		if u.Email.String == "" {
@@ -527,8 +515,9 @@ func login(app *App, w http.ResponseWriter, r *http.Request) error {
 			return impart.HTTPError{http.StatusUnauthorized, "This user never set a password. Perhaps try logging in via OAuth?"}
 		}
 		if !auth.Authenticated(u.HashedPass, []byte(signin.Pass)) {
-			return impart.HTTPError{http.StatusUnauthorized, "Incorrect password."}
+			return errBadLogin
 		}
+		limiter.succeeded(addr)
 	}
 
 	if reqJSON && !signin.Web {
