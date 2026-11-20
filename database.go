@@ -30,8 +30,8 @@ import (
 	"github.com/guregu/null"
 	"github.com/guregu/null/zero"
 	uuid "github.com/nu7hatch/gouuid"
-	"github.com/writeas/activityserve"
 	"github.com/writeas/impart"
+	"github.com/writeas/web-core/activitystreams"
 	"github.com/writeas/web-core/auth"
 	"github.com/writeas/web-core/data"
 	"github.com/writeas/web-core/id"
@@ -3258,14 +3258,16 @@ func (db *datastore) GetProfilePageFromHandle(app *App, handle string) (string, 
 		} else {
 			// this probably means we don't have the user in the table so let's try to insert it
 			// here we need to ask the server for the inboxes
-			remoteActor, err := activityserve.NewRemoteActor(actorIRI)
+			remoteActor, err := fetchRemoteActor(app, actorIRI)
 			if err != nil {
 				log.Error("Couldn't fetch remote actor: %v", err)
+				remoteActor = &activitystreams.Person{}
 			}
+			sharedInbox := sharedInboxOrInbox(remoteActor)
 			if debugging {
-				log.Info("%s %s %s %s", actorIRI, remoteActor.GetInbox(), remoteActor.GetSharedInbox(), handle)
+				log.Info("%s %s %s %s", actorIRI, remoteActor.Inbox, sharedInbox, handle)
 			}
-			_, err = app.db.Exec("INSERT INTO remoteusers (actor_id, inbox, shared_inbox, handle) VALUES(?, ?, ?, ?)", actorIRI, remoteActor.GetInbox(), remoteActor.GetSharedInbox(), handle)
+			_, err = app.db.ExecContext(context.Background(), "INSERT INTO remoteusers (actor_id, inbox, shared_inbox, handle) VALUES(?, ?, ?, ?)", actorIRI, remoteActor.Inbox, sharedInbox, handle)
 			if err != nil {
 				log.Error("Couldn't insert remote user: %v", err)
 				return "", err
