@@ -140,3 +140,16 @@ export const writeFreelyMarkdownSerializer = new MarkdownSerializer(
     },
   }
 );
+
+// The Markdown the editor saves: the serialized document, with each hard
+// break stored as a bare newline.
+export function toStoredMarkdown(doc) {
+  return (
+    writeFreelyMarkdownSerializer
+      .serialize(doc)
+      // Replace all \\\ns ( not followed by a \n ) with \n
+      .replace(/(\\\n)(\n{0,1})/g, (match, p1, p2) =>
+        p2 !== "\n" ? "\n" + p2 : match
+      )
+  );
+}

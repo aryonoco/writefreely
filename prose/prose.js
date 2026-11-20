@@ -14,10 +14,13 @@ import { EditorState, TextSelection } from "prosemirror-state";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 
-import { writeFreelyMarkdownParser } from "./markdownParser";
-import { writeFreelyMarkdownSerializer } from "./markdownSerializer";
-import { writeFreelySchema } from "./schema";
-import { getMenu } from "./menu";
+import { writeFreelyMarkdownParser } from "./markdownParser.js";
+import {
+  writeFreelyMarkdownSerializer,
+  toStoredMarkdown,
+} from "./markdownSerializer.js";
+import { writeFreelySchema } from "./schema.js";
+import { getMenu } from "./menu.js";
 
 let $title = document.querySelector("#title");
 let $content = document.querySelector("#content");
@@ -67,12 +70,7 @@ class ProseMirrorView {
       }),
       dispatchTransaction(transaction) {
         let newState = this.state.apply(transaction);
-        const newContent = writeFreelyMarkdownSerializer
-          .serialize(newState.doc)
-          // Replace all \\\ns ( not followed by a \n ) with \n
-          .replace(/(\\\n)(\n{0,1})/g, (match, p1, p2) =>
-            p2 !== "\n" ? "\n" + p2 : match
-          );
+        const newContent = toStoredMarkdown(newState.doc);
         $content.value = newContent;
         let draft = "";
         if ($title.value != null && $title.value !== "") {
