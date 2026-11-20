@@ -11,9 +11,11 @@
 package writefreely
 
 import (
+	"context"
 	"crypto/tls"
 	"database/sql"
 	_ "embed"
+	"errors"
 	"fmt"
 	"html/template"
 	"net"
@@ -56,6 +58,10 @@ const (
 
 	serverSoftware = "WriteFreely"
 	softwareURL    = "https://writefreely.org"
+
+	// shutdownDrain bounds how long a stop signal waits for in-flight
+	// requests before the server closes the database and exits.
+	shutdownDrain = 8 * time.Second
 )
 
 var (
@@ -491,12 +497,39 @@ func Serve(app *App, r *mux.Router) {
 	isSingleUser = app.cfg.App.SingleUser
 	app.cfg.Server.Dev = debugging
 
-	// Handle shutdown
+	// Handle shutdown: stop accepting connections, let in-flight requests
+	// finish (up to shutdownDrain), then close the database and exit.
+	var (
+		srvMu   sync.Mutex
+		servers []*http.Server
+	)
+	// newServer returns a server the signal handler will drain.
+	newServer := func(addr string, h http.Handler) *http.Server {
+		s := &http.Server{Addr: addr, Handler: h} //nolint:gosec // G112: matches the previous http.Serve behavior, which sets no header timeout
+		srvMu.Lock()
+		defer srvMu.Unlock()
+		servers = append(servers, s)
+		return s
+	}
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
 		log.Info("Shutting down...")
+		srvMu.Lock()
+		toDrain := append([]*http.Server(nil), servers...)
+		srvMu.Unlock()
+		var wg sync.WaitGroup
+		for _, s := range toDrain {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				if err := drain(s, shutdownDrain); err != nil {
+					log.Error("Unable to drain requests: %v", err)
+				}
+			}()
+		}
+		wg.Wait()
 		shutdown(app)
 		log.Info("Done.")
 		os.Exit(0)
@@ -522,9 +555,9 @@ func Serve(app *App, r *mux.Router) {
 				Prompt: autocert.AcceptTOS,
 				Cache:  autocert.DirCache(app.cfg.Server.TLSCertPath),
 			}
-			host, err := url.Parse(app.cfg.App.Host)
-			if err != nil {
-				log.Error("[WARNING] Unable to parse configured host! %s", err)
+			host, parseErr := url.Parse(app.cfg.App.Host)
+			if parseErr != nil {
+				log.Error("[WARNING] Unable to parse configured host! %s", parseErr)
 				log.Error(`[WARNING] ALL hosts are allowed, which can open you to an attack where
 clients connect to a server by IP address and pretend to be asking for an
 incorrect host name, and cause you to reach the CA's rate limit for certificate
@@ -534,19 +567,18 @@ requests. We recommend supplying a valid host name.`)
 				log.Info("Using autocert on host %s", host.Host)
 				m.HostPolicy = autocert.HostWhitelist(host.Host)
 			}
-			s := &http.Server{
-				Addr:    ":https",
-				Handler: r,
-				TLSConfig: &tls.Config{
-					GetCertificate: m.GetCertificate,
-				},
+			s := newServer(":https", r)
+			s.TLSConfig = &tls.Config{
+				GetCertificate: m.GetCertificate,
 			}
 			s.SetKeepAlivesEnabled(false)
 
 			go func() {
 				log.Info("Serving redirects on http://%s:80", bindAddress)
-				err = http.ListenAndServe(":80", m.HTTPHandler(nil))
-				log.Error("Unable to start redirect server: %v", err)
+				rerr := newServer(":80", m.HTTPHandler(nil)).ListenAndServe()
+				if !errors.Is(rerr, http.ErrServerClosed) {
+					log.Error("Unable to start redirect server: %v", rerr)
+				}
 			}()
 
 			log.Info("Serving on https://%s:443", bindAddress)
@@ -555,16 +587,18 @@ requests. We recommend supplying a valid host name.`)
 		} else {
 			go func() {
 				log.Info("Serving redirects on http://%s:80", bindAddress)
-				err = http.ListenAndServe(fmt.Sprintf("%s:80", bindAddress), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rerr := newServer(bindAddress+":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					http.Redirect(w, r, app.cfg.App.Host, http.StatusMovedPermanently)
-				}))
-				log.Error("Unable to start redirect server: %v", err)
+				})).ListenAndServe()
+				if !errors.Is(rerr, http.ErrServerClosed) {
+					log.Error("Unable to start redirect server: %v", rerr)
+				}
 			}()
 
 			log.Info("Serving on https://%s:443", bindAddress)
 			log.Info("Using manual certificates")
 			log.Info("---")
-			err = http.ListenAndServeTLS(fmt.Sprintf("%s:443", bindAddress), app.cfg.Server.TLSCertPath, app.cfg.Server.TLSKeyPath, r)
+			err = newServer(bindAddress+":443", r).ListenAndServeTLS(app.cfg.Server.TLSCertPath, app.cfg.Server.TLSKeyPath)
 		}
 	} else {
 		network := "tcp"
@@ -586,7 +620,8 @@ requests. We recommend supplying a valid host name.`)
 
 		log.Info("Serving on %s://%s", protocol, bindAddress)
 		log.Info("---")
-		listener, err := net.Listen(network, bindAddress)
+		var listener net.Listener
+		listener, err = (&net.ListenConfig{}).Listen(context.Background(), network, bindAddress)
 		if err != nil {
 			log.Error("Could not bind to address: %v", err)
 			os.Exit(1)
@@ -601,12 +636,26 @@ requests. We recommend supplying a valid host name.`)
 		}
 
 		defer listener.Close()
-		err = http.Serve(listener, r)
+		err = newServer("", r).Serve(listener)
+	}
+	if errors.Is(err, http.ErrServerClosed) {
+		// A stop signal is draining the server; its goroutine closes the
+		// database and exits the process.
+		select {}
 	}
 	if err != nil {
 		log.Error("Unable to start: %v", err)
 		os.Exit(1)
 	}
+}
+
+// drain stops srv from accepting connections and waits up to timeout for
+// in-flight requests to finish. It returns context.DeadlineExceeded if any
+// are still running when the time is up.
+func drain(srv *http.Server, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	return srv.Shutdown(ctx)
 }
 
 func (app *App) InitDecoder() {
