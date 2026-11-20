@@ -198,6 +198,10 @@ type (
 		GitlabOauth  GitlabOauthCfg  `ini:"oauth.gitlab"`
 		GiteaOauth   GiteaOauthCfg   `ini:"oauth.gitea"`
 		GenericOauth GenericOauthCfg `ini:"oauth.generic"`
+
+		// fromEnv holds, for each secret overridden from the environment,
+		// the value the configuration file had for it.
+		fromEnv map[string]string
 	}
 )
 
@@ -285,6 +289,11 @@ func Load(fname string) (*Config, error) {
 		return nil, err
 	}
 
+	err = uc.ApplyEnv(os.Getenv, os.ReadFile)
+	if err != nil {
+		return nil, err
+	}
+
 	// Do any transformations
 	u, err := url.Parse(uc.App.Host)
 	if err != nil {
@@ -303,10 +312,11 @@ func Load(fname string) (*Config, error) {
 	return uc, nil
 }
 
-// Save writes the given Config to the given file.
+// Save writes the given Config to the given file. Secrets that came from the
+// environment are written back with the values the file had for them.
 func Save(uc *Config, fname string) error {
 	cfg := ini.Empty()
-	err := ini.ReflectFrom(cfg, uc)
+	err := ini.ReflectFrom(cfg, uc.ForSave())
 	if err != nil {
 		return err
 	}
