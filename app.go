@@ -1132,12 +1132,12 @@ func CreateUser(apper Apper, username, password string, isAdmin bool) error {
 	if isAdmin {
 		// Abort if trying to create admin user, but one already exists
 		if firstUser != nil {
-			return fmt.Errorf("Admin user already exists (%s). Create a regular user with: writefreely user create [USER]:[PASSWORD]", firstUser.Username)
+			return fmt.Errorf("an admin user already exists (%s); create a regular user instead", firstUser.Username)
 		}
 	} else {
 		// Abort if trying to create regular user, but no admin exists yet
 		if firstUser == nil {
-			return fmt.Errorf("No admin user exists yet. Create an admin first with: writefreely user create --admin [USER]:[PASSWORD]")
+			return errors.New("no admin user exists yet; create the admin user first")
 		}
 	}
 
