@@ -31,7 +31,6 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/onsi/gomega v1.13.0 // indirect
-	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli/v2 v2.27.7
 	github.com/writeas/activity v0.1.2
@@ -41,7 +40,6 @@ require (
 	github.com/writeas/impart v1.1.1
 	github.com/writeas/import v0.2.1
 	github.com/writeas/monday v1.3.0
-	github.com/writeas/saturday v1.7.2-0.20200427193424-392b95a03320
 	github.com/writeas/web-core v1.8.0
 	github.com/writefreely/go-gopher v0.0.0-20220429181814-40127126f83b
 	github.com/writefreely/go-nodeinfo v1.2.0
@@ -52,6 +50,7 @@ require (
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/xhit/go-simple-mail/v2 v2.17.0
+	github.com/yuin/goldmark/v2 v2.1.16
 )
 
 require (
@@ -75,11 +74,9 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
 	github.com/writeas/go-writeas/v2 v2.0.2 // indirect
 	github.com/writeas/openssl-go v1.0.0 // indirect
-	github.com/writeas/slug v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sys v0.50.0 // indirect
