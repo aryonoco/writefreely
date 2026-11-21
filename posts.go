@@ -1662,7 +1662,7 @@ Are you sure it was ever here?` + shortCodeNoSig,
 		if app.cfg.Email.Enabled() && c.EmailSubsEnabled() {
 			// TODO: indicate plan is inactive or subs disabled when OWNER is viewing their own post.
 			if u != nil && u.IsEmailSubscriber(app, c.ID) {
-				p.Content = strings.Replace(p.Content, shortCodeEmailSub, `<p id="emailsub">You're subscribed to email updates. <a href="/api/collections/`+c.Alias+`/email/unsubscribe?slug=`+p.Slug.String+`">Unsubscribe</a>.</p>`, -1)
+				p.Content = replaceShortCodeEmailSub(p.Content, `<p id="emailsub">You're subscribed to email updates. <a href="/api/collections/`+c.Alias+`/email/unsubscribe?slug=`+p.Slug.String+`">Unsubscribe</a>.</p>`)
 			} else {
 				p.Content = alterShortCodeEmailSubForm(p.Content, c.Alias, p.Slug.String, false, csrf.TemplateField(r))
 			}

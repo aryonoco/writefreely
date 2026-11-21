@@ -32,7 +32,6 @@ import (
 	"github.com/writeas/web-core/bots"
 	"github.com/writeas/web-core/i18n"
 	"github.com/writeas/web-core/log"
-	"github.com/writeas/web-core/posts"
 	"github.com/writefreely/writefreely/author"
 	"github.com/writefreely/writefreely/config"
 	"github.com/writefreely/writefreely/page"
@@ -404,7 +403,7 @@ func (c *Collection) DisplayDescription() *template.HTML {
 		s := template.HTML("")
 		return &s
 	}
-	t := template.HTML(posts.ApplyBasicAccessibleMarkdown([]byte(c.Description)))
+	t := template.HTML(applyBasicAccessibleMarkdown([]byte(c.Description))) //nolint:gosec // applyBasicAccessibleMarkdown sanitizes the HTML it returns
 	return &t
 }
 
@@ -642,7 +641,7 @@ func fetchCollectionPosts(app *App, w http.ResponseWriter, r *http.Request) erro
 	// Transform post bodies if needed
 	if r.FormValue("body") == "html" {
 		for _, p := range *coll.Posts {
-			p.Content = posts.ApplyMarkdown([]byte(p.Content))
+			p.Content = applyAPIMarkdown([]byte(p.Content))
 		}
 	}
 

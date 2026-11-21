@@ -1,3 +1,11 @@
+/* The height of a line of a post's text, worked out once on the article so
+   that blocks with their own font size or line height can count in it. */
+@property --wf-line {
+	syntax: "<length>";
+	inherits: true;
+	initial-value: 0px;
+}
+
 body {
 	font-family: @serifFont;
 	font-size-adjust: 0.5;
@@ -20,7 +28,7 @@ body {
 		line-height: 1.2;
 	}
 
-	&#post article, &#collection article p, &#subpage article p {
+	&#collection article p, &#subpage article p {
 		display: block;
 		unicode-bidi: embed;
 		white-space: pre;
@@ -37,30 +45,89 @@ body {
 
 		blockquote {
 			p + p {
-				margin: -2em 0 0.5em;
+				margin-top: calc(2 * var(--wf-line) - 1.5em);
 			}
 		}
 		article {
 			margin-bottom: 2em !important;
+			unicode-bidi: embed;
+			/* Lay out the post's blocks as blocks, so the newlines between
+			   them in the markup don't show; text inside a block keeps its
+			   line breaks. */
+			white-space: normal;
 
-			h1, h2, h3, h4, h5, h6, p, ul, ol, code {
-				display: inline;
-				margin: 0;
+			&.norm, &.sans, &.wrap {
+				line-height: 1.5;
+				word-wrap: break-word;
 			}
-			hr + p, ol, ul {
-				display: block;
-				margin-top: -1rem;
-				margin-bottom: -1rem;
+			h1, h2, h3, h4, h5, h6, p, li, td, th {
+				white-space: pre-wrap;
 			}
-			ol, ul {
-				margin: 2rem 0 -1rem;
-				ol, ul {
-					margin: 1.25rem 0 -0.5rem;
+			&.mono, &.code {
+				h1, h2, h3, h4, h5, h6, p, li, td, th {
+					white-space: pre;
 				}
 			}
-			li {
-				margin-top: -0.5rem;
-				margin-bottom: -0.5rem;
+			/* A list item that holds blocks lays them out as the article
+			   does. */
+			&, &.mono, &.code {
+				li:has(> p, > ul, > ol, > pre, > blockquote, > table) {
+					white-space: normal;
+				}
+			}
+
+			/* Spacing is counted in lines of the post's text, so it
+			   follows each font's line height; list offsets are in rem.
+			   Browsers without the lh unit count a line as 1.5em. */
+			--wf-line: 1.5em;
+			@supports (height: 1lh) {
+				--wf-line: 1lh;
+			}
+			p {
+				margin: var(--wf-line) 0 ~"min(var(--wf-line), 1.5rem)";
+			}
+			h1, h2, h3, h4, h5, h6 {
+				margin: var(--wf-line) 0 0;
+			}
+			/* The space between list items is a line of the list. */
+			ol, ul {
+				--wf-line: 1.5em;
+				@supports (height: 1lh) {
+					--wf-line: 1lh;
+				}
+				margin: 1.5rem 0 calc(2 * var(--wf-line) - 1rem);
+			}
+			li + li {
+				margin-top: calc(var(--wf-line) - 1rem);
+			}
+			li > p:first-child {
+				margin-top: 0;
+			}
+			li > p:last-child {
+				margin-bottom: calc(2 * var(--wf-line) - 1rem);
+			}
+			li > ol, li > ul {
+				margin: 0.75rem 0 0;
+			}
+			pre, table, form {
+				margin: var(--wf-line) 0 calc(2 * var(--wf-line));
+			}
+			/* Highlighted code stays inline in its block, so its tabs and
+			   scrolling are the block's. */
+			pre code {
+				display: inline;
+			}
+			hr + p {
+				margin: calc(2 * var(--wf-line) - 1rem) 0;
+			}
+			#readmore-sell {
+				margin-top: calc(2 * var(--wf-line));
+			}
+			div > :first-child {
+				margin-top: 0;
+			}
+			div > :last-child {
+				margin-bottom: 0;
 			}
 			h2#title {
 				.article-title;
@@ -527,7 +594,7 @@ pre, body#post article, #post .alert, #subpage .alert, body#collection article, 
 		line-height: 1.5;
 	}
 }
-textarea, input#title, pre, body#post article, body#collection article p {
+textarea, input#title, pre, body#collection article p {
 	&.norm, &.sans, &.wrap {
 		line-height: 1.5;
 		white-space: pre-wrap;       /* CSS 3 */
@@ -1628,8 +1695,6 @@ pre.code-block {
 	text-align: center;
 }
 p#emailsub {
-	display: inline-block !important;
-	width: 100%;
 	font-style: italic;
 }
 #subscribe-btn {

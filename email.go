@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/aymerick/douceur/inliner"
@@ -326,7 +325,7 @@ func emailPost(app *App, p *PublicPost, collID int64) error {
 
 	// Do some shortcode replacement.
 	// Since the user is receiving this email, we can assume they're subscribed via email.
-	p.Content = strings.Replace(p.Content, shortCodeEmailSub, `<p id="emailsub">You're subscribed to email updates.</p>`, -1)
+	p.Content = replaceShortCodeEmailSub(p.Content, `<p id="emailsub">You're subscribed to email updates.</p>`)
 
 	if p.HTMLContent == template.HTML("") {
 		p.formatContent(app.cfg, false, false)
@@ -392,11 +391,63 @@ Sent to %recipient.to%. Unsubscribe: ` + p.Collection.CanonicalURL() + `email/un
 		#article {
 			line-height: 1.5;
 			margin: 1.5em 0;
-			white-space: pre-wrap;
+			white-space: normal;
 			word-wrap: break-word;
 		}
-		h1, h2, h3, h4, h5, h6, p, code {
-			display: inline
+		p, h1, h2, h3, h4, h5, h6, td, th {
+			white-space: pre-wrap;
+		}
+		p {
+			margin: 1.5em 0 1em;
+		}
+		h1, h2, h3, h4, h5, h6 {
+			margin: 0;
+		}
+		h1 {
+			margin-top: 0.75em;
+		}
+		h2 {
+			margin-top: 1em;
+		}
+		h3 {
+			margin-top: 1.28em;
+		}
+		h4 {
+			margin-top: 1.5em;
+		}
+		h5 {
+			margin-top: 1.81em;
+		}
+		h6 {
+			margin-top: 2.24em;
+		}
+		ul, ol {
+			margin: 1em 0 4em;
+		}
+		li + li {
+			margin-top: 1.5em;
+		}
+		li > p, li > ul, li > ol {
+			margin: 0;
+		}
+		li + li > p:first-child {
+			margin-top: 3em;
+		}
+		li > p + p {
+			margin-top: 1.5em;
+		}
+		blockquote {
+			margin-top: 2.5em;
+			margin-bottom: 4em;
+		}
+		pre {
+			margin: 2.85em 0 4.7em;
+		}
+		table {
+			margin: 1.5em 0 3em;
+		}
+		table + p {
+			margin-top: 3em;
 		}
 		img, iframe, video {
 			max-width: 100%
@@ -418,15 +469,17 @@ Sent to %recipient.to%. Unsubscribe: ` + p.Collection.CanonicalURL() + `email/un
 			display: block;
 			font-size: 0.86em;
 			color: #666;
+			margin: 1em 0;
 		}
 		hr {
 			border: 1px solid #ccc;
 			margin: 2em 1em;
 		}
+		#article hr {
+			margin: 3.5em 1em 5em;
+		}
 		p#emailsub {
 			text-align: center;
-			display: inline-block !important;
-			width: 100%;
 			font-style: italic;
 		}
 		</style>
